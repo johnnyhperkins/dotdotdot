@@ -11,56 +11,57 @@ document.addEventListener('DOMContentLoaded', () => {
     const x = e.pageX - dotX,
           y = e.pageY - dotY;
 
-    canvas.addEventListener('mousemove', handleMouseMove(e,x,y), true)
-    
     dots.forEach(function(dot) {
-      // console.log(dot.height);
       if( y > dot.py && y < dot.py + (dot.height)
         && x > dot.px && x < dot.px + (dot.width) ) {
-          // console.log('mousedown');
-          // console.log(dot.px, dot.py);
+          canvas.addEventListener('mousemove', handleMouseMove(dot))
+          console.log('mousedown');
         }
     })
   }, false)
 
-  // const handleMouseDown = function(e) {
-
-  // }
-
-  const handleMouseMove = function(e, x, y) {  
-    const mouseX = e.pageX - dotX,
-          mouseY = e.pageY - dotY;
-    return drawLine({x, y}, {x: mouseX, y: mouseY})
+  function handleMouseMove(dot) {  
+    return function(e) {
+      const mouseX = e.pageX - dotX,
+            mouseY = e.pageY - dotY;
+            
+      drawLine({x: dot.x, y: dot.y}, {x: mouseX, y: mouseY})
+    }
   }
 
   canvas.addEventListener('mouseup', function(e) {
     const x = e.pageX - dotX,
           y = e.pageY - dotY;
-    
-    // canvas.removeEventListener('mousemove', handleMouseMove);
+    clearLine();
+    canvas.removeEventListener('mousemove', handleMouseMove);
     dots.forEach(function(dot) {
       if( y > dot.py && y < dot.py + (dot.height)
         && x > dot.px && x < dot.px + (dot.width) ) {
-          // console.log('mouseup');
-          // console.log(dot.px, dot.py);
+          canvas.removeEventListener('mousemove', handleMouseMove);
+          
+          console.log('mouseup');
         }
     })
-  }, false)
-  
-  function drawLine(start, end) {
-    // debugger
+  })
+
+  function clearLine() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     render();
+  }
+  
+  function drawLine(start, end) {
+    clearLine();
     ctx.beginPath();
     ctx.moveTo(start.x, start.y);
     ctx.lineTo(end.x, end.y);
+    ctx.strokeStyle = "blue";
+    ctx.lineWidth = 4;
     ctx.stroke();
   }
 
   function drawRow(x, y, numDots) {
     while (numDots > 0 ) {
       dots.push(new Dot(x, y, ctx))
-      // new Dot(x, y, ctx).drawBall();
       x += 46;
       numDots--;
     }
@@ -75,7 +76,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   drawGrid(6, 33);
 
-  // console.log(dots);
   function render() {
     dots.forEach(function(dot) {
       dot.drawBall();
@@ -86,5 +86,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
 })
 
-// handleMouseMove(e, x, y)
+
 
