@@ -1,0 +1,31 @@
+{
+  "name": "dotdotdot",
+  "version": "1.0.0",
+  "description": "* DDD will be a variation of the game Two Dots, where players have to connect a certain number of like-colored dots in a set number of moves. When the dots are connected they disappear and random new dots drop from the top of the canvas. If the player connects dots in the shape of a box, all like-colored dots disappear from the board.  ## Functionality and MVP Features * Users are presented with a random grid of colored dots and will use the mouse to connect them * If no move is available, all dots are shuffled with a higher probability of a box appearing. * If win requirements are met in the set number of moves, a score is calculated based on number of remaining moves the player has and the next level begins ## Architecture and Technologies * Javascript, Canvas ## Implementation Timeline * Set up canvas grid, initial randomization logic and dot class - 1 day * Work on mouse and dot animations, user interaction with the board, connection and removal of dots - 1 day * Finish logic for win/loss scenarios, point system - 1 day",
+  "main": "board.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "webpack": "webpack --mode=development -w"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/johnnyhperkins/dotdotdot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/johnnyhperkins/dotdotdot/issues"
+  },
+  "homepage": "https://github.com/johnnyhperkins/dotdotdot#readme",
+  "devDependencies": {
+    "webpack": "^4.29.2",
+    "webpack-cli": "^3.2.3"
+  },
+  "dependencies": {
+    "@babel/core": "^7.2.2",
+    "@babel/preset-env": "^7.3.1",
+    "babel-loader": "^8.0.5",
+    "lodash": "^4.17.11"
+  }
+}
