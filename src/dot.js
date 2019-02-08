@@ -23,6 +23,10 @@ class Dot {
     this.ctx.fill();
     this.ctx.closePath();
   }
+
+  getNeighbors() {
+    
+  }
 }
 
 export default Dot

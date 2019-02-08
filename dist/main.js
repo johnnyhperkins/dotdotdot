@@ -17261,6 +17261,189 @@ module.exports = function(module) {
 
 /***/ }),
 
+/***/ "./src/board.js":
+/*!**********************!*\
+  !*** ./src/board.js ***!
+  \**********************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _dot__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./dot */ "./src/dot.js");
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+
+
+
+var Board =
+/*#__PURE__*/
+function () {
+  function Board(canvas, tempCanvas) {
+    _classCallCheck(this, Board);
+
+    this.dots = [];
+    this.ctx = canvas.getContext("2d");
+    this.tempCtx = tempCanvas.getContext("2d");
+    this.canvasOffset = $("#canvas").offset();
+    this.canvasX = this.canvasOffset.left;
+    this.canvasY = this.canvasOffset.top;
+    this.selectedDots = [];
+    this.startingDot = null;
+    this.startLineX = null;
+    this.startLineY = null;
+    this.isDown = false;
+    this.drawGrid(6, 33);
+  }
+
+  _createClass(Board, [{
+    key: "handleMouseDown",
+    value: function handleMouseDown(e) {
+      e.preventDefault();
+      var mouseX = e.pageX - canvasX,
+          mouseY = e.pageY - canvasY,
+          startingDot = selectedDots.length ? selectedDots[0] : null;
+      dots.forEach(function (dot) {
+        if (mouseY > dot.py && mouseY < dot.py + dot.height && mouseX > dot.px && mouseX < dot.px + dot.width) {
+          startLineX = mouseX;
+          startLineY = mouseY;
+          tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+          if (!startingDot) {
+            selectedDots.push(dot);
+          }
+
+          console.log('mousedown');
+        }
+      });
+      isDown = true;
+      console.log(selectedDots); //     debugger;
+    }
+  }, {
+    key: "handleMouseMove",
+    value: function handleMouseMove(e) {
+      e.preventDefault(); // debugger;
+
+      if (!isDown && !!startingDot) return;
+      var mouseX = e.pageX - canvasX,
+          mouseY = e.pageY - canvasY; // starts drawing a line from the center of closest dot to click:
+      // debugger;
+
+      drawMouseLine({
+        x: startingDot.x,
+        y: startingDot.y
+      }, {
+        x: mouseX,
+        y: mouseY
+      }, startingDot.color); // if cursor mouses over another dot of the same color
+      // draw a line between those dots
+      // add to the array of selected dots
+      // recenter the anchor dot to the next dot selected
+
+      dots.forEach(function (nextDot) {
+        if (mouseY > nextDot.py && mouseY < nextDot.py + nextDot.height && mouseX > nextDot.px && mouseX < nextDot.px + nextDot.width && startingDot.colorId == nextDot.colorId && nextDot.px !== startingDot.px && nextDot.py !== startingDot.py) {
+          console.log('inside another dot'); // debugger
+          // console.log(this);
+          // console.log('dot:', dot);
+          // console.log('selectedDots:',selectedDots);
+          // console.log('nextDot', nextDot);
+          // if(!selectedDots.includes(nextDot)) {
+          //   console.log(nextDot);
+          //   console.log(selectedDots);
+          //   selectedDots.push(nextDot);
+          // }
+        }
+      });
+    }
+  }, {
+    key: "handleMouseUp",
+    value: function handleMouseUp(e) {
+      e.preventDefault();
+      if (!isDown) return;
+      isDown = false;
+      startingDot = null;
+      selectedDots = []; // Remove dots
+      // trigger new dots dropping
+
+      tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+      var mouseX = e.pageX - canvasX,
+          y = e.pageY - canvasY; // canvas.removeEventListener('mousemove', handleMouseMove);
+
+      dots.forEach(function (dot) {
+        if (y > dot.py && y < dot.py + dot.height && mouseX > dot.px && mouseX < dot.px + dot.width) {
+          console.log('mouseup');
+        }
+      });
+    }
+  }, {
+    key: "clearLine",
+    value: function clearLine() {
+      tempCtx.clearRect(0, 0, canvas.width, canvas.height);
+      render();
+    }
+  }, {
+    key: "drawConnections",
+    value: function drawConnections(coords) {
+      ctx.beginPath();
+      ctx.moveTo(start.x, start.y);
+      ctx.lineTo(end.x, end.y);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 4;
+      ctx.stroke();
+    }
+  }, {
+    key: "drawMouseLine",
+    value: function drawMouseLine(start, end, color) {
+      clearLine();
+      tempCtx.beginPath();
+      tempCtx.moveTo(start.x, start.y);
+      tempCtx.lineTo(end.x, end.y);
+      tempCtx.strokeStyle = color;
+      tempCtx.lineWidth = 4;
+      tempCtx.stroke();
+    }
+  }, {
+    key: "drawRow",
+    value: function drawRow(x, y, numDots) {
+      while (numDots > 0) {
+        dots.push(new _dot__WEBPACK_IMPORTED_MODULE_1__["default"](x, y, ctx));
+        x += 46;
+        numDots--;
+      }
+    }
+  }, {
+    key: "drawGrid",
+    value: function drawGrid(rows, y) {
+      while (rows > 0) {
+        drawRow(33, y, 6);
+        y += 46;
+        rows--;
+      }
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      dotPositionsAndColors = [];
+      dots.forEach(function (dot) {
+        dot.drawBall(); // debugger
+        // dotPositionsAndColors.push([dot.px,dot.py,dot.colorId])
+      });
+    }
+  }]);
+
+  return Board;
+}();
+
+/* harmony default export */ __webpack_exports__["default"] = (Board);
+
+/***/ }),
+
 /***/ "./src/dot.js":
 /*!********************!*\
   !*** ./src/dot.js ***!
@@ -17308,6 +17491,9 @@ function () {
       this.ctx.fill();
       this.ctx.closePath();
     }
+  }, {
+    key: "getNeighbors",
+    value: function getNeighbors() {}
   }]);
 
   return Dot;
@@ -17327,84 +17513,105 @@ function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _dot__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./dot */ "./src/dot.js");
+/* harmony import */ var _board__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./board */ "./src/board.js");
+
 
 document.addEventListener('DOMContentLoaded', function () {
-  var canvas = document.getElementById('myCanvas');
+  var canvas = document.getElementById('canvas');
+  var tempCanvas = document.getElementById('tempCanvas');
   var dots = [],
-      dotX = canvas.offsetLeft,
-      dotY = canvas.offsetTop,
+      canvasOffset = $("#canvas").offset(),
+      canvasX = canvasOffset.left,
+      canvasY = canvasOffset.top,
       ctx = canvas.getContext("2d"),
-      selectedDotColor = '',
+      tempCtx = tempCanvas.getContext("2d"),
+      dotPositionsAndColors = [],
       selectedDots = [],
-      startingDot = []; // MOUSE DOWN
+      startingDot,
+      startLineX,
+      startLineY,
+      isDown; // on selection of dot, populate array with possible nearby moves?
+  // MOUSE DOWN 
 
-  canvas.addEventListener('mousedown', function (e) {
-    var x = e.pageX - dotX,
-        y = e.pageY - dotY;
+  function handleMouseDown(e) {
+    e.preventDefault();
+    var mouseX = e.pageX - canvasX,
+        mouseY = e.pageY - canvasY,
+        startingDot = selectedDots.length ? selectedDots[0] : null;
     dots.forEach(function (dot) {
-      if (y > dot.py && y < dot.py + dot.height && x > dot.px && x < dot.px + dot.width) {
-        if (!!startingDot.length) {
-          startingDot.push(dot);
-        } else if (!selectedDots.includes(dot)) {
+      if (mouseY > dot.py && mouseY < dot.py + dot.height && mouseX > dot.px && mouseX < dot.px + dot.width) {
+        startLineX = mouseX;
+        startLineY = mouseY;
+        tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+        if (!startingDot) {
           selectedDots.push(dot);
         }
 
-        canvas.addEventListener('mousemove', handleMouseMove(dot));
         console.log('mousedown');
       }
     });
-  }, false);
+    isDown = true;
+    console.log(selectedDots); //     debugger;
+  }
 
-  function handleMouseMove(dot) {
-    return function (e) {
-      var mouseX = e.pageX - dotX,
-          mouseY = e.pageY - dotY;
-      drawMouseLine({
-        x: dot.x,
-        y: dot.y
-      }, {
-        x: mouseX,
-        y: mouseY
-      }, dot.color); // if cursor mouses over another dot of the same color
-      // draw a line between those dots
-      // add to the array of selected dots
-      // recenter the anchor dot to the next dot selected
+  function handleMouseMove(e) {
+    e.preventDefault(); // debugger;
 
-      dots.forEach(function (nextDot) {
-        if (mouseY > nextDot.py && mouseY < nextDot.py + nextDot.height && mouseX > nextDot.px && mouseX < nextDot.px + nextDot.width && dot.px !== nextDot.px && dot.py !== nextDot.py && dot.colorId == nextDot.colorId) {
-          console.log(selectedDots);
-          console.log(nextDot); // if(!selectedDots.includes(nextDot)) {
-          //   console.log(nextDot);
-          //   console.log(selectedDots);
-          //   selectedDots.push(nextDot);
-          // }
-        }
-      });
-    };
+    if (!isDown && !!startingDot) return;
+    var mouseX = e.pageX - canvasX,
+        mouseY = e.pageY - canvasY; // starts drawing a line from the center of closest dot to click:
+    // debugger;
+
+    drawMouseLine({
+      x: startingDot.x,
+      y: startingDot.y
+    }, {
+      x: mouseX,
+      y: mouseY
+    }, startingDot.color); // if cursor mouses over another dot of the same color
+    // draw a line between those dots
+    // add to the array of selected dots
+    // recenter the anchor dot to the next dot selected
+
+    dots.forEach(function (nextDot) {
+      if (mouseY > nextDot.py && mouseY < nextDot.py + nextDot.height && mouseX > nextDot.px && mouseX < nextDot.px + nextDot.width && startingDot.colorId == nextDot.colorId && nextDot.px !== startingDot.px && nextDot.py !== startingDot.py) {
+        console.log('inside another dot'); // debugger
+        // console.log(this);
+        // console.log('dot:', dot);
+        // console.log('selectedDots:',selectedDots);
+        // console.log('nextDot', nextDot);
+        // if(!selectedDots.includes(nextDot)) {
+        //   console.log(nextDot);
+        //   console.log(selectedDots);
+        //   selectedDots.push(nextDot);
+        // }
+      }
+    });
   } // MOUSE UP
 
 
-  canvas.addEventListener('mouseup', function (e) {
-    // Remove dots
-    // trigger new dots dropping 
-    selectedDotColor = '';
-    selectedDots = [];
-    startingDot = [];
-    canvas.removeEventListener('mousemove', handleMouseMove);
-    var x = e.pageX - dotX,
-        y = e.pageY - dotY;
-    clearLine(); // canvas.removeEventListener('mousemove', handleMouseMove);
+  function handleMouseUp(e) {
+    e.preventDefault();
+    if (!isDown) return;
+    isDown = false;
+    startingDot = null;
+    selectedDots = []; // Remove dots
+    // trigger new dots dropping
+
+    tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+    var mouseX = e.pageX - canvasX,
+        y = e.pageY - canvasY; // canvas.removeEventListener('mousemove', handleMouseMove);
 
     dots.forEach(function (dot) {
-      if (y > dot.py && y < dot.py + dot.height && x > dot.px && x < dot.px + dot.width) {
-        canvas.removeEventListener('mousemove', handleMouseMove);
+      if (y > dot.py && y < dot.py + dot.height && mouseX > dot.px && mouseX < dot.px + dot.width) {
         console.log('mouseup');
       }
     });
-  }, false);
+  }
 
   function clearLine() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    tempCtx.clearRect(0, 0, canvas.width, canvas.height);
     render();
   }
 
@@ -17419,12 +17626,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function drawMouseLine(start, end, color) {
     clearLine();
-    ctx.beginPath();
-    ctx.moveTo(start.x, start.y);
-    ctx.lineTo(end.x, end.y);
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 4;
-    ctx.stroke();
+    tempCtx.beginPath();
+    tempCtx.moveTo(start.x, start.y);
+    tempCtx.lineTo(end.x, end.y);
+    tempCtx.strokeStyle = color;
+    tempCtx.lineWidth = 4;
+    tempCtx.stroke();
   }
 
   function drawRow(x, y, numDots) {
@@ -17446,11 +17653,22 @@ document.addEventListener('DOMContentLoaded', function () {
   drawGrid(6, 33);
 
   function render() {
+    dotPositionsAndColors = [];
     dots.forEach(function (dot) {
-      dot.drawBall();
+      dot.drawBall(); // debugger
+
+      dotPositionsAndColors.push([dot.px, dot.py, dot.colorId]);
     });
   }
 
+  $('#canvas').mousedown(function (e) {
+    handleMouseDown(e);
+  });
+  $('#canvas').mousemove(function (e) {
+    handleMouseMove(e);
+  }); // canvas.addEventListener('mousedown', handleMouseDown);
+
+  canvas.addEventListener('mouseup', handleMouseUp);
   render();
 });
 
