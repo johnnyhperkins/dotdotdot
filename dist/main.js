@@ -17558,7 +17558,10 @@ function () {
     this.selectedDots = [];
     this.legalMoves = [];
     this.currentDot = null;
-    this.isDown = false; // makeGrid(number of rows, position of first dot)
+    this.isDown = false;
+    this.isSquare = false; // makeGrid(number of rows, position of first dot)
+    // use zip when eliminating dots ? _.zip.apply(_, [[1,2,3], [1,2,3], [1,2,3]])
+    // TO DO: Feb 9th: finish figuring out backing off when a square is made 
 
     this.makeGrid(6, 10);
   }
@@ -17573,12 +17576,18 @@ function () {
       var positions = [[row, col - 1], [row, col + 1], [row + 1, col], [row - 1, col]];
       var colorId = this.getDot(pos).colorId;
       this.legalMoves = positions.filter(function (pos) {
-        // TO DO: refactor to be allow for squares and be more DRY:
-        if (_this.selectedDots.lengt < 3) {
+        // TO DO: refactor to be more DRY:
+        if (_this.selectedDots.length < 3) {
           return !_this.selectedDots.includes(_this.getDot(pos)) && _this.getDot(pos) && _this.getDot(pos).colorId === colorId;
-        } else {
-          return _this.getDot(pos) && _this.getDot(pos).colorId === colorId;
-        }
+        } // duplicate logic here and in mousemove
+        else if (_this.selectedDots.length > 1 && _this.selectedDots[0].id == lodash__WEBPACK_IMPORTED_MODULE_0___default.a.last(_this.selectedDots).id) {
+            _this.isSquare = true;
+            console.log('running');
+            return;
+          } else {
+            debugger;
+            return _this.getDot(pos) && _this.getDot(pos).colorId === colorId;
+          }
       }).map(function (pos) {
         return _this.getDot(pos);
       }); //  console.log(this.legalMoves);
@@ -17626,12 +17635,9 @@ function () {
 
             _this2.currentDot = dot;
           }
-
-          console.log('mousedown');
         }
       });
       this.isDown = true;
-      console.log(this.selectedDots);
     }
   }, {
     key: "handleMouseMove",
@@ -17651,17 +17657,30 @@ function () {
       }, {
         x: mouseX,
         y: mouseY
-      });
+      }); // if(!this.isSquare) {
+
       this.legalMoves.forEach(function (dot) {
         if (mouseY > dot.py && mouseY < dot.py + dot.height && mouseX > dot.px && mouseX < dot.px + dot.width) {
-          _this3.selectedDots.push(dot);
+          if (_this3.selectedDots[0].id == dot.id) {
+            _this3.isSquare = true;
+
+            _this3.selectedDots.push(dot);
+          } else if (!_this3.selectedDots.includes(dot)) {
+            _this3.selectedDots.push(dot);
+
+            _this3.isSquare = false;
+          } else {
+            _this3.selectedDots.pop();
+
+            _this3.isSquare = false;
+          }
 
           _this3.currentDot = dot;
           console.log('selectedDots:', _this3.selectedDots);
 
           _this3.getLegalMovesById(dot.id);
         }
-      });
+      }); // }
     }
   }, {
     key: "handleMouseUp",
@@ -17674,12 +17693,9 @@ function () {
       this.clearTempCanvas(); // Remove dots
       // trigger new dots dropping
 
-      var mouseX = e.pageX - this.canvasX,
-          mouseY = e.pageY - this.canvasY;
-      this.dots.flat().forEach(function (dot) {
-        if (mouseY > dot.py && mouseY < dot.py + dot.height && mouseX > dot.px && mouseX < dot.px + dot.width) {}
+      this.dots.flat().forEach(function (dot) {// check for this.isSquare
+        // else remove dots in the array
       });
-      console.log('mouseup');
     }
   }, {
     key: "clearTempCanvas",

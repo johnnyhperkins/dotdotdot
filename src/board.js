@@ -15,8 +15,11 @@ class Board {
     this.legalMoves = [];
     this.currentDot = null;
     this.isDown = false;
+    this.isSquare = false;
     
     // makeGrid(number of rows, position of first dot)
+    // use zip when eliminating dots ? _.zip.apply(_, [[1,2,3], [1,2,3], [1,2,3]])
+    // TO DO: Feb 9th: finish figuring out backing off when a square is made 
     this.makeGrid(6, 10);
   }
 
@@ -32,19 +35,28 @@ class Board {
     const colorId = this.getDot(pos).colorId;
 
     this.legalMoves = positions.filter(pos => {
-      // TO DO: refactor to be allow for squares and be more DRY:
-      if(this.selectedDots.lengt < 3) {
+      // TO DO: refactor to be more DRY:
+      if(this.selectedDots.length < 3) {
         return !this.selectedDots.includes(this.getDot(pos)) && 
         this.getDot(pos) && 
         this.getDot(pos).colorId === colorId
-      } else {
+      } 
+      // duplicate logic here and in mousemove
+      else if(this.selectedDots.length > 1 && 
+        this.selectedDots[0].id == _.last(this.selectedDots).id) {
+        this.isSquare = true;
+        console.log('running');
+        return;
+      } 
+      else {
+        debugger
         return this.getDot(pos) && 
         this.getDot(pos).colorId === colorId
       }
     })
-       .map(pos => this.getDot(pos));
+      .map(pos => this.getDot(pos));
       //  console.log(this.legalMoves);
-       this.legalMoves.forEach(dot => console.log("x", dot.x, "y", dot.y ))
+      this.legalMoves.forEach(dot => console.log("x", dot.x, "y", dot.y ))
   }
 
   getLegalMovesById(uuid) {
@@ -76,18 +88,15 @@ class Board {
           mouseX > dot.px &&
           mouseX < (dot.px + dot.width) 
         ) {
-          
           this.tempCtx.clearRect(0,0,this.tempCanvas.width,this.tempCanvas.height);
           if(!this.currentDot) {
             this.selectedDots.push(dot);
             this.getLegalMovesById(dot.id);
             this.currentDot = dot;
           } 
-          console.log('mousedown');
         }
     })
     this.isDown = true;
-    console.log(this.selectedDots);
   }
 
   handleMouseMove(e) {
@@ -104,17 +113,31 @@ class Board {
       {x: this.currentDot.x, y: this.currentDot.y}, 
       {x: mouseX, y: mouseY}
     )
+    
+    // if(!this.isSquare) {
+      this.legalMoves.forEach(dot => {
+        if( mouseY > dot.py && mouseY < dot.py + dot.height && 
+            mouseX > dot.px && mouseX < dot.px + dot.width ) {
+              
+          if(this.selectedDots[0].id == dot.id) {
+            this.isSquare = true;
+            this.selectedDots.push(dot)
+          } else if( !this.selectedDots.includes(dot) ) {
+            this.selectedDots.push(dot);
+            this.isSquare = false;
+          }  else {
+            this.selectedDots.pop();
+            this.isSquare = false;
+          } 
+          
+          this.currentDot = dot;
+          console.log('selectedDots:', this.selectedDots);
+          this.getLegalMovesById(dot.id)
+        } 
+      })
+    // }
 
     
-    this.legalMoves.forEach(dot => {
-      if( mouseY > dot.py && mouseY < dot.py + dot.height && 
-          mouseX > dot.px && mouseX < dot.px + dot.width ) { 
-        this.selectedDots.push(dot);
-        this.currentDot = dot;
-        console.log('selectedDots:', this.selectedDots);
-        this.getLegalMovesById(dot.id)
-      } 
-    })
   }
 
   handleMouseUp(e) {
@@ -128,16 +151,10 @@ class Board {
     // Remove dots
     // trigger new dots dropping
     
-    const mouseX = e.pageX - this.canvasX,
-          mouseY = e.pageY - this.canvasY;
-
     this.dots.flat().forEach(dot => {
-      if( mouseY > dot.py && mouseY < dot.py + (dot.height)
-        && mouseX > dot.px && mouseX < dot.px + (dot.width) ) {
-
-        }
+      // check for this.isSquare
+      // else remove dots in the array
     })
-    console.log('mouseup');
   }
 
   clearTempCanvas() {
