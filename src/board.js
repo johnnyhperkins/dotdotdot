@@ -12,19 +12,15 @@ class Board {
     this.canvasX = this.canvasOffset.left;
     this.canvasY = this.canvasOffset.top;
     this.selectedDots = [];
-    this.currentDotPos = [];
     this.legalMoves = [];
-    this.startingDot = null;
-    this.startLineX = null;
-    this.startLineY = null;
+    this.currentDot = null;
     this.isDown = false;
     
-    // makegrind(number of rows, position of first dot)
+    // makeGrid(number of rows, position of first dot)
     this.makeGrid(6, 10);
-    console.log(this.dots);
   }
 
-  findLegalMoves(pos) {
+  updateLegalMoves(pos) {
     const row = pos[0];
     const col = pos[1];
     const positions = [
@@ -35,16 +31,27 @@ class Board {
     ]
     const colorId = this.getDot(pos).colorId;
 
-    this.legalMoves = positions.filter(pos => 
-       this.getDot(pos) && this.getDot(pos).colorId === colorId )
+    this.legalMoves = positions.filter(pos => {
+      // TO DO: refactor to be allow for squares and be more DRY:
+      if(this.selectedDots.lengt < 3) {
+        return !this.selectedDots.includes(this.getDot(pos)) && 
+        this.getDot(pos) && 
+        this.getDot(pos).colorId === colorId
+      } else {
+        return this.getDot(pos) && 
+        this.getDot(pos).colorId === colorId
+      }
+    })
        .map(pos => this.getDot(pos));
+      //  console.log(this.legalMoves);
+       this.legalMoves.forEach(dot => console.log("x", dot.x, "y", dot.y ))
   }
 
-  getDotGridPosition(uuid) {
+  getLegalMovesById(uuid) {
     for (let i = 0; i < this.dots.length; i++) {
       for (let j = 0; j < this.dots[i].length; j++) {
         if(this.dots[i][j].id == uuid) {
-          return this.findLegalMoves([i,j]);
+          return this.updateLegalMoves([i,j]);
         } 
       }
     }
@@ -61,7 +68,7 @@ class Board {
     e.preventDefault();
     const mouseX = e.pageX - this.canvasX,
           mouseY = e.pageY - this.canvasY;
-    this.startingDot = this.selectedDots.length ? this.selectedDots[0] : null;
+    this.currentDot = this.selectedDots.length ? this.selectedDots[0] : null;
 
     this.dots.flat().forEach(dot => {
       if( mouseY > dot.py && 
@@ -69,13 +76,12 @@ class Board {
           mouseX > dot.px &&
           mouseX < (dot.px + dot.width) 
         ) {
-          this.startLineX = mouseX;
-          this.startLineY = mouseY;
+          
           this.tempCtx.clearRect(0,0,this.tempCanvas.width,this.tempCanvas.height);
-          if(!this.startingDot) {
+          if(!this.currentDot) {
             this.selectedDots.push(dot);
-            this.getDotGridPosition(dot.id);
-            this.startingDot = dot;
+            this.getLegalMovesById(dot.id);
+            this.currentDot = dot;
           } 
           console.log('mousedown');
         }
@@ -86,7 +92,6 @@ class Board {
 
   handleMouseMove(e) {
     e.preventDefault();
-    // debugger;
     if(!this.isDown && this.selectedDots.length == 0) return;
     
     const mouseX = e.pageX - this.canvasX,
@@ -94,22 +99,20 @@ class Board {
     
     // starts drawing a line from the center of closest dot to click:
     // debugger;
-    this.drawMouseLine(
-      {x: this.startingDot.x, y: this.startingDot.y}, 
-      {x: mouseX, y: mouseY}, 
-      this.startingDot.color
+    this.currentDot && this.drawMouseLine(
+      // {x: this.selectedDots[-1].x, y: this.selectedDots[-1].y}, 
+      {x: this.currentDot.x, y: this.currentDot.y}, 
+      {x: mouseX, y: mouseY}
     )
 
-    // if cursor mouses over another dot of the same color
-      // draw a line between those dots
-      // add to the array of selected dots
-      // recenter the anchor dot to the next dot selected
-    console.log("x:", mouseX);
-    console.log("y:", mouseY);
+    
     this.legalMoves.forEach(dot => {
       if( mouseY > dot.py && mouseY < dot.py + dot.height && 
           mouseX > dot.px && mouseX < dot.px + dot.width ) { 
-        
+        this.selectedDots.push(dot);
+        this.currentDot = dot;
+        console.log('selectedDots:', this.selectedDots);
+        this.getLegalMovesById(dot.id)
       } 
     })
   }
@@ -118,42 +121,53 @@ class Board {
     e.preventDefault();
     if(!this.isDown) return;
     this.isDown = false;
-    this.startingDot = null;
+    this.currentDot = null;
     this.selectedDots = [];
+    this.clearTempCanvas();
+
     // Remove dots
     // trigger new dots dropping
-    this.tempCtx.clearRect(0,0,this.tempCanvas.width,this.tempCanvas.height);
+    
     const mouseX = e.pageX - this.canvasX,
           mouseY = e.pageY - this.canvasY;
+
     this.dots.flat().forEach(dot => {
       if( mouseY > dot.py && mouseY < dot.py + (dot.height)
         && mouseX > dot.px && mouseX < dot.px + (dot.width) ) {
-          console.log('mouseup');
+
         }
     })
     console.log('mouseup');
   }
 
-  clearLine() {
+  clearTempCanvas() {
     this.tempCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
-  drawConnections(coords) {
-    
-    this.ctx.beginPath();
-    this.ctx.moveTo(start.x, start.y);
-    this.ctx.lineTo(end.x, end.y);
-    this.ctx.strokeStyle = color;
-    this.ctx.lineWidth = 4;
-    this.ctx.stroke();
-  }
-
-  drawMouseLine(start, end, color) {
-    this.clearLine();
+  drawConnection(start, end) {
     this.tempCtx.beginPath();
     this.tempCtx.moveTo(start.x, start.y);
     this.tempCtx.lineTo(end.x, end.y);
-    this.tempCtx.strokeStyle = color;
+    this.tempCtx.strokeStyle = this.currentDot.color;
+    this.tempCtx.lineWidth = 4;
+    this.tempCtx.stroke();
+  }
+
+  drawMouseLine(start, end) {
+    this.clearTempCanvas();
+    if(this.selectedDots.length > 1) {
+      const dots = this.selectedDots;
+      for (let i = 0; i < dots.length -1; i++) {
+        this.drawConnection(
+          {x: dots[i].x, y: dots[i].y},
+          {x: dots[i+1].x, y: dots[i+1].y},
+        )
+      }
+    }
+    this.tempCtx.beginPath();
+    this.tempCtx.moveTo(start.x, start.y);
+    this.tempCtx.lineTo(end.x, end.y);
+    this.tempCtx.strokeStyle = this.currentDot.color;
     this.tempCtx.lineWidth = 4;
     this.tempCtx.stroke();
   }

@@ -17556,20 +17556,16 @@ function () {
     this.canvasX = this.canvasOffset.left;
     this.canvasY = this.canvasOffset.top;
     this.selectedDots = [];
-    this.currentDotPos = [];
     this.legalMoves = [];
-    this.startingDot = null;
-    this.startLineX = null;
-    this.startLineY = null;
-    this.isDown = false; // makegrind(number of rows, position of first dot)
+    this.currentDot = null;
+    this.isDown = false; // makeGrid(number of rows, position of first dot)
 
     this.makeGrid(6, 10);
-    console.log(this.dots);
   }
 
   _createClass(Board, [{
-    key: "findLegalMoves",
-    value: function findLegalMoves(pos) {
+    key: "updateLegalMoves",
+    value: function updateLegalMoves(pos) {
       var _this = this;
 
       var row = pos[0];
@@ -17577,18 +17573,27 @@ function () {
       var positions = [[row, col - 1], [row, col + 1], [row + 1, col], [row - 1, col]];
       var colorId = this.getDot(pos).colorId;
       this.legalMoves = positions.filter(function (pos) {
-        return _this.getDot(pos) && _this.getDot(pos).colorId === colorId;
+        // TO DO: refactor to be allow for squares and be more DRY:
+        if (_this.selectedDots.lengt < 3) {
+          return !_this.selectedDots.includes(_this.getDot(pos)) && _this.getDot(pos) && _this.getDot(pos).colorId === colorId;
+        } else {
+          return _this.getDot(pos) && _this.getDot(pos).colorId === colorId;
+        }
       }).map(function (pos) {
         return _this.getDot(pos);
+      }); //  console.log(this.legalMoves);
+
+      this.legalMoves.forEach(function (dot) {
+        return console.log("x", dot.x, "y", dot.y);
       });
     }
   }, {
-    key: "getDotGridPosition",
-    value: function getDotGridPosition(uuid) {
+    key: "getLegalMovesById",
+    value: function getLegalMovesById(uuid) {
       for (var i = 0; i < this.dots.length; i++) {
         for (var j = 0; j < this.dots[i].length; j++) {
           if (this.dots[i][j].id == uuid) {
-            return this.findLegalMoves([i, j]);
+            return this.updateLegalMoves([i, j]);
           }
         }
       }
@@ -17609,20 +17614,17 @@ function () {
       e.preventDefault();
       var mouseX = e.pageX - this.canvasX,
           mouseY = e.pageY - this.canvasY;
-      this.startingDot = this.selectedDots.length ? this.selectedDots[0] : null;
+      this.currentDot = this.selectedDots.length ? this.selectedDots[0] : null;
       this.dots.flat().forEach(function (dot) {
         if (mouseY > dot.py && mouseY < dot.py + dot.height && mouseX > dot.px && mouseX < dot.px + dot.width) {
-          _this2.startLineX = mouseX;
-          _this2.startLineY = mouseY;
-
           _this2.tempCtx.clearRect(0, 0, _this2.tempCanvas.width, _this2.tempCanvas.height);
 
-          if (!_this2.startingDot) {
+          if (!_this2.currentDot) {
             _this2.selectedDots.push(dot);
 
-            _this2.getDotGridPosition(dot.id);
+            _this2.getLegalMovesById(dot.id);
 
-            _this2.startingDot = dot;
+            _this2.currentDot = dot;
           }
 
           console.log('mousedown');
@@ -17634,28 +17636,31 @@ function () {
   }, {
     key: "handleMouseMove",
     value: function handleMouseMove(e) {
-      e.preventDefault(); // debugger;
+      var _this3 = this;
 
+      e.preventDefault();
       if (!this.isDown && this.selectedDots.length == 0) return;
       var mouseX = e.pageX - this.canvasX,
           mouseY = e.pageY - this.canvasY; // starts drawing a line from the center of closest dot to click:
       // debugger;
 
-      this.drawMouseLine({
-        x: this.startingDot.x,
-        y: this.startingDot.y
+      this.currentDot && this.drawMouseLine( // {x: this.selectedDots[-1].x, y: this.selectedDots[-1].y}, 
+      {
+        x: this.currentDot.x,
+        y: this.currentDot.y
       }, {
         x: mouseX,
         y: mouseY
-      }, this.startingDot.color); // if cursor mouses over another dot of the same color
-      // draw a line between those dots
-      // add to the array of selected dots
-      // recenter the anchor dot to the next dot selected
-
-      console.log("x:", mouseX);
-      console.log("y:", mouseY);
+      });
       this.legalMoves.forEach(function (dot) {
-        if (mouseY > dot.py && mouseY < dot.py + dot.height && mouseX > dot.px && mouseX < dot.px + dot.width) {}
+        if (mouseY > dot.py && mouseY < dot.py + dot.height && mouseX > dot.px && mouseX < dot.px + dot.width) {
+          _this3.selectedDots.push(dot);
+
+          _this3.currentDot = dot;
+          console.log('selectedDots:', _this3.selectedDots);
+
+          _this3.getLegalMovesById(dot.id);
+        }
       });
     }
   }, {
@@ -17664,43 +17669,56 @@ function () {
       e.preventDefault();
       if (!this.isDown) return;
       this.isDown = false;
-      this.startingDot = null;
-      this.selectedDots = []; // Remove dots
+      this.currentDot = null;
+      this.selectedDots = [];
+      this.clearTempCanvas(); // Remove dots
       // trigger new dots dropping
 
-      this.tempCtx.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
       var mouseX = e.pageX - this.canvasX,
           mouseY = e.pageY - this.canvasY;
       this.dots.flat().forEach(function (dot) {
-        if (mouseY > dot.py && mouseY < dot.py + dot.height && mouseX > dot.px && mouseX < dot.px + dot.width) {
-          console.log('mouseup');
-        }
+        if (mouseY > dot.py && mouseY < dot.py + dot.height && mouseX > dot.px && mouseX < dot.px + dot.width) {}
       });
       console.log('mouseup');
     }
   }, {
-    key: "clearLine",
-    value: function clearLine() {
+    key: "clearTempCanvas",
+    value: function clearTempCanvas() {
       this.tempCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
   }, {
-    key: "drawConnections",
-    value: function drawConnections(coords) {
-      this.ctx.beginPath();
-      this.ctx.moveTo(start.x, start.y);
-      this.ctx.lineTo(end.x, end.y);
-      this.ctx.strokeStyle = color;
-      this.ctx.lineWidth = 4;
-      this.ctx.stroke();
-    }
-  }, {
-    key: "drawMouseLine",
-    value: function drawMouseLine(start, end, color) {
-      this.clearLine();
+    key: "drawConnection",
+    value: function drawConnection(start, end) {
       this.tempCtx.beginPath();
       this.tempCtx.moveTo(start.x, start.y);
       this.tempCtx.lineTo(end.x, end.y);
-      this.tempCtx.strokeStyle = color;
+      this.tempCtx.strokeStyle = this.currentDot.color;
+      this.tempCtx.lineWidth = 4;
+      this.tempCtx.stroke();
+    }
+  }, {
+    key: "drawMouseLine",
+    value: function drawMouseLine(start, end) {
+      this.clearTempCanvas();
+
+      if (this.selectedDots.length > 1) {
+        var dots = this.selectedDots;
+
+        for (var i = 0; i < dots.length - 1; i++) {
+          this.drawConnection({
+            x: dots[i].x,
+            y: dots[i].y
+          }, {
+            x: dots[i + 1].x,
+            y: dots[i + 1].y
+          });
+        }
+      }
+
+      this.tempCtx.beginPath();
+      this.tempCtx.moveTo(start.x, start.y);
+      this.tempCtx.lineTo(end.x, end.y);
+      this.tempCtx.strokeStyle = this.currentDot.color;
       this.tempCtx.lineWidth = 4;
       this.tempCtx.stroke();
     }
