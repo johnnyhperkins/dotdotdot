@@ -4,16 +4,17 @@ const COLORS = ['red', 'blue', 'green'];
 
 class Dot {
   constructor(x,y,ctx) {
-    this.ballRadius = 11;
+    this.ballRadius = 10;
     this.ctx = ctx;
     this.x = x;
     this.y = y;
     this.px = this.x - this.ballRadius;
     this.py = this.y - this.ballRadius;
-    this.height = 22;
-    this.width = 22;
+    this.height = 20;
+    this.width = 20;
     this.color = _.sample(COLORS);
-    this.colorId = COLORS.indexOf(this.color) + 1
+    this.colorId = COLORS.indexOf(this.color) + 1;
+    // this.gridPos = ;
   }
 
   drawBall() {
@@ -24,9 +25,6 @@ class Dot {
     this.ctx.closePath();
   }
 
-  getNeighbors() {
-    
-  }
 }
 
 export default Dot
