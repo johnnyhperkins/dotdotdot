@@ -1,9 +1,11 @@
 import _ from 'lodash';
+import uuid from 'uuid';
 
 const COLORS = ['red', 'blue', 'green'];
 
 class Dot {
   constructor(x,y,ctx) {
+    this.id = uuid();
     this.ballRadius = 10;
     this.ctx = ctx;
     this.x = x;

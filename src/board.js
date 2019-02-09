@@ -12,18 +12,49 @@ class Board {
     this.canvasX = this.canvasOffset.left;
     this.canvasY = this.canvasOffset.top;
     this.selectedDots = [];
+    this.currentDotPos = [];
     this.legalMoves = [];
     this.startingDot = null;
     this.startLineX = null;
     this.startLineY = null;
     this.isDown = false;
-
+    
+    // makegrind(number of rows, position of first dot)
     this.makeGrid(6, 10);
     console.log(this.dots);
   }
 
-  findLegalMoves() {
-    //create array of coordinates that are legal moves
+  findLegalMoves(pos) {
+    const row = pos[0];
+    const col = pos[1];
+    const positions = [
+      [row, col-1],
+      [row, col+1],
+      [row+1, col],
+      [row-1, col]
+    ]
+    const colorId = this.getDot(pos).colorId;
+
+    this.legalMoves = positions.filter(pos => 
+       this.getDot(pos) && this.getDot(pos).colorId === colorId )
+       .map(pos => this.getDot(pos));
+  }
+
+  getDotGridPosition(uuid) {
+    for (let i = 0; i < this.dots.length; i++) {
+      for (let j = 0; j < this.dots[i].length; j++) {
+        if(this.dots[i][j].id == uuid) {
+          return this.findLegalMoves([i,j]);
+        } 
+      }
+    }
+  }
+
+  getDot(pos) {
+    const row = pos[0];
+    const col = pos[1];
+    if(row < 0 || row > 5 || col < 0 || col > 5) return false;
+    return this.dots[row][col];
   }
 
   handleMouseDown(e) {
@@ -43,6 +74,7 @@ class Board {
           this.tempCtx.clearRect(0,0,this.tempCanvas.width,this.tempCanvas.height);
           if(!this.startingDot) {
             this.selectedDots.push(dot);
+            this.getDotGridPosition(dot.id);
             this.startingDot = dot;
           } 
           console.log('mousedown');
@@ -62,7 +94,11 @@ class Board {
     
     // starts drawing a line from the center of closest dot to click:
     // debugger;
-    this.drawMouseLine({x: this.startingDot.x, y: this.startingDot.y}, {x: mouseX, y: mouseY}, this.startingDot.color)
+    this.drawMouseLine(
+      {x: this.startingDot.x, y: this.startingDot.y}, 
+      {x: mouseX, y: mouseY}, 
+      this.startingDot.color
+    )
 
     // if cursor mouses over another dot of the same color
       // draw a line between those dots
@@ -70,25 +106,11 @@ class Board {
       // recenter the anchor dot to the next dot selected
     console.log("x:", mouseX);
     console.log("y:", mouseY);
-    this.dots.flat().forEach(nextDot => {
-      if( mouseY > nextDot.py && mouseY < nextDot.py + nextDot.height && 
-          mouseX > nextDot.px && mouseX < nextDot.px + nextDot.width && 
-          this.startingDot.colorId == nextDot.colorId && 
-          nextDot.px !== this.startingDot.px && 
-          nextDot.py !== this.startingDot.py
-        ) {
-          // console.log('inside another dot');
-          // debugger
-          // console.log(this);
-          // console.log('dot:', dot);
-          // console.log('this.selectedDots:',this.selectedDots);
-          // console.log('nextDot', nextDot);
-          // if(!this.selectedDots.includes(nextDot)) {
-          //   console.log(nextDot);
-          //   console.log(this.selectedDots);
-          //   this.selectedDots.push(nextDot);
-          // }
-        } 
+    this.legalMoves.forEach(dot => {
+      if( mouseY > dot.py && mouseY < dot.py + dot.height && 
+          mouseX > dot.px && mouseX < dot.px + dot.width ) { 
+        
+      } 
     })
   }
 
@@ -114,12 +136,11 @@ class Board {
 
   clearLine() {
     this.tempCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    // this.render(); 
   }
 
   drawConnections(coords) {
-    this.ctx.beginPath();
     
+    this.ctx.beginPath();
     this.ctx.moveTo(start.x, start.y);
     this.ctx.lineTo(end.x, end.y);
     this.ctx.strokeStyle = color;
