@@ -17531,7 +17531,7 @@ module.exports = function(module) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _dot__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./dot */ "./src/dot.js");
+/* harmony import */ var _grid__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./grid */ "./src/grid.js");
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -17544,14 +17544,13 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 var Board =
 /*#__PURE__*/
 function () {
-  function Board(canvas, tempCanvas) {
+  function Board(canvas, tempCanvas, ctx, tempContext) {
     _classCallCheck(this, Board);
 
-    this.dots = [];
     this.canvas = canvas;
     this.tempCanvas = tempCanvas;
-    this.ctx = canvas.getContext("2d");
-    this.tempCtx = tempCanvas.getContext("2d");
+    this.ctx = ctx;
+    this.tempCtx = tempContext;
     this.canvasOffset = $("#canvas").offset();
     this.canvasX = this.canvasOffset.left;
     this.canvasY = this.canvasOffset.top;
@@ -17560,11 +17559,9 @@ function () {
     this.currentDot = null;
     this.isDown = false;
     this.isSquare = false;
-    this.deletedPositions = []; // makeGrid(number of rows, position of first dot)
-    // use zip when eliminating dots ? _.zip.apply(_, [[1,2,3], [1,2,3], [1,2,3]])
-    // TO DO: Feb 9th: finish figuring out backing off when a square is made 
-
-    this.makeGrid(6, 10);
+    this.deletedPositions = [];
+    this.grid = new _grid__WEBPACK_IMPORTED_MODULE_1__["default"](6, 10, canvas, ctx);
+    this.dotGrid = this.grid.grid; // board.makeGrid(number of rows)
   }
 
   _createClass(Board, [{
@@ -17572,14 +17569,15 @@ function () {
     value: function updateLegalMoves(pos) {
       var _this = this;
 
+      // TO DO: Feb 9th: finish figuring out backing off when a square is made 
       var row = pos[0];
       var col = pos[1];
       var positions = [[row, col - 1], [row, col + 1], [row + 1, col], [row - 1, col]];
-      var colorId = this.getDot(pos).colorId;
+      var colorId = this.grid.getDot(pos).colorId;
       this.legalMoves = positions.filter(function (pos) {
         // TO DO: refactor to be more DRY:
         if (_this.selectedDots.length < 3) {
-          return !_this.selectedDots.includes(_this.getDot(pos)) && _this.getDot(pos) && _this.getDot(pos).colorId === colorId;
+          return !_this.selectedDots.includes(_this.grid.getDot(pos)) && _this.grid.getDot(pos) && _this.grid.getDot(pos).colorId === colorId;
         } // duplicate logic here and in mousemove
         else if (_this.selectedDots.length > 1 && _this.selectedDots[0].id == lodash__WEBPACK_IMPORTED_MODULE_0___default.a.last(_this.selectedDots).id) {
             _this.isSquare = true;
@@ -17587,31 +17585,26 @@ function () {
             return;
           } else {
             // debugger
-            return _this.getDot(pos) && _this.getDot(pos).colorId === colorId;
+            return _this.grid.getDot(pos) && _this.grid.getDot(pos).colorId === colorId;
           }
       }).map(function (pos) {
-        return _this.getDot(pos);
+        return _this.grid.getDot(pos);
       }); //  console.log(this.legalMoves);
-      // this.legalMoves.forEach(dot => console.log("x", dot.x, "y", dot.y ))
+
+      this.legalMoves.forEach(function (dot) {
+        return console.log("x", dot.x, "y", dot.y);
+      });
     }
   }, {
     key: "getLegalMovesById",
     value: function getLegalMovesById(id) {
-      for (var i = 0; i < this.dots.length; i++) {
-        for (var j = 0; j < this.dots[i].length; j++) {
-          if (this.dots[i][j].id == id) {
+      for (var i = 0; i < this.dotGrid.length; i++) {
+        for (var j = 0; j < this.dotGrid[i].length; j++) {
+          if (this.dotGrid[i][j].id == id) {
             return this.updateLegalMoves([i, j]);
           }
         }
       }
-    }
-  }, {
-    key: "getDot",
-    value: function getDot(pos) {
-      var row = pos[0];
-      var col = pos[1];
-      if (row < 0 || row > 5 || col < 0 || col > 5) return false;
-      return this.dots[row][col];
     }
   }, {
     key: "handleMouseDown",
@@ -17622,7 +17615,7 @@ function () {
       var mouseX = e.pageX - this.canvasX,
           mouseY = e.pageY - this.canvasY;
       this.currentDot = this.selectedDots.length ? this.selectedDots[0] : null;
-      this.dots.flat().forEach(function (dot) {
+      this.dotGrid.flat().forEach(function (dot) {
         if (mouseY > dot.py && mouseY < dot.py + dot.height && mouseX > dot.px && mouseX < dot.px + dot.width) {
           _this2.tempCtx.clearRect(0, 0, _this2.tempCanvas.width, _this2.tempCanvas.height);
 
@@ -17704,13 +17697,13 @@ function () {
   }, {
     key: "deleteDot",
     value: function deleteDot(id) {
-      for (var i = 0; i < this.dots.length; i++) {
-        for (var j = 0; j < this.dots[i].length; j++) {
-          var currentDot = this.dots[i][j];
+      for (var i = 0; i < this.dotGrid.length; i++) {
+        for (var j = 0; j < this.dotGrid[i].length; j++) {
+          var currentDot = this.dotGrid[i][j];
 
           if (currentDot.id == id && !currentDot.deleted) {
-            currentDot.deleted = true; // this.dots[i] = this.dots[i].filter(dot => dot.id !== currentDot.id)
-            // this.dots[i].unshift(currentDot);
+            currentDot.deleted = true; // this.dotGrid[i] = this.dotGrid[i].filter(dot => dot.id !== currentDot.id)
+            // this.dotGrid[i].unshift(currentDot);
           }
         }
       }
@@ -17720,28 +17713,24 @@ function () {
     value: function handleRemoveDots() {
       var _this4 = this;
 
-      this.dots = lodash__WEBPACK_IMPORTED_MODULE_0___default.a.zip.apply(lodash__WEBPACK_IMPORTED_MODULE_0___default.a, this.dots); // rotates the array counterclockwise
-
+      // rotates the array counterclockwise
       this.selectedDots.forEach(function (dot) {
         _this4.deleteDot(dot.id);
-      });
-      debugger;
+      }); // debugger;
+      // for (let i = 0; i < this.dotGrid.length; i++) {
+      //   for (let j = 0; j < this.dotGrid[i].length; j++) {
+      //     const currentDot = this.dotGrid[i][j];
+      //     if(currentDot.deleted) {
+      //       currentDot.deleted = true;
+      //       // this.dotGrid[i] = this.dotGrid[i].filter(dot => dot.id !== currentDot.id)
+      //     } 
+      //   }
+      // }
+      //need to multiply y by the number of deleted dots in each row;
+      // debugger;
+      // finish up (last step)
 
-      for (var i = 0; i < this.dots.length; i++) {
-        for (var j = 0; j < this.dots[i].length; j++) {
-          var currentDot = this.dots[i][j];
-
-          if (currentDot.deleted) {
-            currentDot.deleted = true; // this.dots[i] = this.dots[i].filter(dot => dot.id !== currentDot.id)
-          }
-        }
-      } //need to multiply y by the number of deleted dots in each row;
-
-
-      debugger; // finish up (last step)
-
-      this.dots = lodash__WEBPACK_IMPORTED_MODULE_0___default.a.zip.apply(lodash__WEBPACK_IMPORTED_MODULE_0___default.a, this.dots);
-      this.render(); // mark each dot to be removed and transpose the array then... 
+      this.grid.render(); // mark each dot to be removed and transpose the array then... 
       // move all nulls to the start of each array?
       // fill the nulls with newly generated random dots
       // transpose array again
@@ -17791,38 +17780,6 @@ function () {
       this.tempCtx.strokeStyle = this.currentDot.color;
       this.tempCtx.lineWidth = 4;
       this.tempCtx.stroke();
-    }
-  }, {
-    key: "makeRow",
-    value: function makeRow(x, y, numDots) {
-      var dotRow = [];
-
-      while (numDots > 0) {
-        dotRow.push(new _dot__WEBPACK_IMPORTED_MODULE_1__["default"](x, y, this.ctx));
-        x += 40;
-        numDots--;
-      }
-
-      this.dots.push(dotRow);
-    }
-  }, {
-    key: "makeGrid",
-    value: function makeGrid(rows, y) {
-      while (rows > 0) {
-        this.makeRow(10, y, 6);
-        y += 40;
-        rows--;
-      }
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      this.clearCanvas();
-      this.dots.flat().forEach(function (dot) {
-        if (dot) {
-          dot.drawBall();
-        }
-      });
     }
   }]);
 
@@ -17896,6 +17853,142 @@ function () {
 
 /***/ }),
 
+/***/ "./src/game.js":
+/*!*********************!*\
+  !*** ./src/game.js ***!
+  \*********************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _board__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./board */ "./src/board.js");
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+
+
+var Game =
+/*#__PURE__*/
+function () {
+  function Game(canvas, tempCanvas) {
+    _classCallCheck(this, Game);
+
+    this.canvas = canvas;
+    this.tempCanvas = tempCanvas;
+    this.ctx = canvas.getContext("2d");
+    this.tempCtx = tempCanvas.getContext("2d");
+    this.board = new _board__WEBPACK_IMPORTED_MODULE_0__["default"](canvas, tempCanvas, this.ctx, this.tempCtx);
+  }
+
+  _createClass(Game, [{
+    key: "startGame",
+    value: function startGame() {
+      this.board.grid.render();
+    }
+  }]);
+
+  return Game;
+}();
+
+/* harmony default export */ __webpack_exports__["default"] = (Game);
+
+/***/ }),
+
+/***/ "./src/grid.js":
+/*!*********************!*\
+  !*** ./src/grid.js ***!
+  \*********************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _dot__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./dot */ "./src/dot.js");
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+
+
+var Grid =
+/*#__PURE__*/
+function () {
+  function Grid(rows, startingXYPosition, canvas, ctx) {
+    _classCallCheck(this, Grid);
+
+    this.ctx = ctx;
+    this.canvas = canvas;
+    this.startingXYPosition = startingXYPosition;
+    this.grid = [];
+    this.rows = rows;
+    this.makeGrid(rows);
+  }
+
+  _createClass(Grid, [{
+    key: "getDot",
+    value: function getDot(pos) {
+      var row = pos[0];
+      var col = pos[1];
+      if (row < 0 || row > 5 || col < 0 || col > 5) return false;
+      return this.grid[row][col];
+    }
+  }, {
+    key: "makeRow",
+    value: function makeRow(x, y, numDots) {
+      var dotRow = [];
+
+      while (numDots > 0) {
+        // debugger;
+        dotRow.push(new _dot__WEBPACK_IMPORTED_MODULE_0__["default"](x, y, this.ctx));
+        x += 40;
+        numDots--;
+      }
+
+      this.grid.push(dotRow);
+    }
+  }, {
+    key: "makeGrid",
+    value: function makeGrid() {
+      var y = this.startingXYPosition;
+      var counter = this.rows; // console.log('makegrid rows', rows);
+
+      while (counter > 0) {
+        this.makeRow(this.startingXYPosition, y, this.rows);
+        y += 40;
+        counter--;
+      }
+    }
+  }, {
+    key: "clearCanvas",
+    value: function clearCanvas() {
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      this.clearCanvas(); // this.makeGrid();
+
+      this.grid.flat().forEach(function (dot) {
+        if (dot) {
+          dot.drawBall();
+        }
+      });
+    }
+  }]);
+
+  return Grid;
+}();
+
+/* harmony default export */ __webpack_exports__["default"] = (Grid);
+
+/***/ }),
+
 /***/ "./src/index.js":
 /*!**********************!*\
   !*** ./src/index.js ***!
@@ -17905,22 +17998,22 @@ function () {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _board__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./board */ "./src/board.js");
+/* harmony import */ var _game__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./game */ "./src/game.js");
 
 document.addEventListener('DOMContentLoaded', function () {
   var canvas = document.getElementById('canvas');
   var tempCanvas = document.getElementById('tempCanvas');
-  var board = new _board__WEBPACK_IMPORTED_MODULE_0__["default"](canvas, tempCanvas);
+  var game = new _game__WEBPACK_IMPORTED_MODULE_0__["default"](canvas, tempCanvas);
   $('#canvas').mousedown(function (e) {
-    board.handleMouseDown(e);
+    game.board.handleMouseDown(e);
   });
   $('#canvas').mousemove(function (e) {
-    board.handleMouseMove(e);
+    game.board.handleMouseMove(e);
   });
   $('#canvas').mouseup(function (e) {
-    board.handleMouseUp(e);
+    game.board.handleMouseUp(e);
   });
-  board.render();
+  game.startGame();
 });
 
 /***/ })

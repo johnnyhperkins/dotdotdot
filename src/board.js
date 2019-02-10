@@ -1,13 +1,13 @@
 import _ from 'lodash';
-import Dot from './dot';
+import Grid from './grid';
+
 
 class Board {
-  constructor(canvas, tempCanvas) {
-    this.dots = [];
+  constructor(canvas, tempCanvas, ctx, tempContext) {
     this.canvas = canvas;
     this.tempCanvas = tempCanvas;
-    this.ctx = canvas.getContext("2d");
-    this.tempCtx = tempCanvas.getContext("2d");
+    this.ctx = ctx;
+    this.tempCtx = tempContext;
     this.canvasOffset = $("#canvas").offset();
     this.canvasX = this.canvasOffset.left;
     this.canvasY = this.canvasOffset.top;
@@ -17,14 +17,17 @@ class Board {
     this.isDown = false;
     this.isSquare = false;
     this.deletedPositions = [];
+
+    this.grid = new Grid(6,10, canvas, ctx);
+    this.dotGrid = this.grid.grid;
     
-    // makeGrid(number of rows, position of first dot)
-    // use zip when eliminating dots ? _.zip.apply(_, [[1,2,3], [1,2,3], [1,2,3]])
-    // TO DO: Feb 9th: finish figuring out backing off when a square is made 
-    this.makeGrid(6, 10);
+    // board.makeGrid(number of rows)
+  
   }
 
   updateLegalMoves(pos) {
+    // TO DO: Feb 9th: finish figuring out backing off when a square is made 
+
     const row = pos[0];
     const col = pos[1];
     const positions = [
@@ -33,14 +36,14 @@ class Board {
       [row+1, col],
       [row-1, col]
     ]
-    const colorId = this.getDot(pos).colorId;
+    const colorId = this.grid.getDot(pos).colorId;
 
     this.legalMoves = positions.filter(pos => {
       // TO DO: refactor to be more DRY:
       if(this.selectedDots.length < 3) {
-        return !this.selectedDots.includes(this.getDot(pos)) && 
-        this.getDot(pos) && 
-        this.getDot(pos).colorId === colorId
+        return !this.selectedDots.includes(this.grid.getDot(pos)) && 
+        this.grid.getDot(pos) && 
+        this.grid.getDot(pos).colorId === colorId
       } 
       // duplicate logic here and in mousemove
       else if(this.selectedDots.length > 1 && 
@@ -51,30 +54,23 @@ class Board {
       } 
       else {
         // debugger
-        return this.getDot(pos) && 
-        this.getDot(pos).colorId === colorId
+        return this.grid.getDot(pos) && 
+        this.grid.getDot(pos).colorId === colorId
       }
     })
-      .map(pos => this.getDot(pos));
+      .map(pos => this.grid.getDot(pos));
       //  console.log(this.legalMoves);
-      // this.legalMoves.forEach(dot => console.log("x", dot.x, "y", dot.y ))
+      this.legalMoves.forEach(dot => console.log("x", dot.x, "y", dot.y ))
   }
 
   getLegalMovesById(id) {
-    for (let i = 0; i < this.dots.length; i++) {
-      for (let j = 0; j < this.dots[i].length; j++) {
-        if(this.dots[i][j].id == id) {
+    for (let i = 0; i < this.dotGrid.length; i++) {
+      for (let j = 0; j < this.dotGrid[i].length; j++) {
+        if(this.dotGrid[i][j].id == id) {
           return this.updateLegalMoves([i,j]);
         } 
       }
     }
-  }
-
-  getDot(pos) {
-    const row = pos[0];
-    const col = pos[1];
-    if(row < 0 || row > 5 || col < 0 || col > 5) return false;
-    return this.dots[row][col];
   }
 
   handleMouseDown(e) {
@@ -82,8 +78,7 @@ class Board {
     const mouseX = e.pageX - this.canvasX,
           mouseY = e.pageY - this.canvasY;
     this.currentDot = this.selectedDots.length ? this.selectedDots[0] : null;
-
-    this.dots.flat().forEach(dot => {
+    this.dotGrid.flat().forEach(dot => {
       if( mouseY > dot.py && 
           mouseY < (dot.py + dot.height) &&
           mouseX > dot.px &&
@@ -162,40 +157,38 @@ class Board {
   }
 
   deleteDot(id) {
-    for (let i = 0; i < this.dots.length; i++) {
-      for (let j = 0; j < this.dots[i].length; j++) {
-        const currentDot = this.dots[i][j];
+    for (let i = 0; i < this.dotGrid.length; i++) {
+      for (let j = 0; j < this.dotGrid[i].length; j++) {
+        const currentDot = this.dotGrid[i][j];
         if(currentDot.id == id && !currentDot.deleted) {
           currentDot.deleted = true;
-          // this.dots[i] = this.dots[i].filter(dot => dot.id !== currentDot.id)
-          // this.dots[i].unshift(currentDot);
+          // this.dotGrid[i] = this.dotGrid[i].filter(dot => dot.id !== currentDot.id)
+          // this.dotGrid[i].unshift(currentDot);
         } 
       }
     }
   }
 
   handleRemoveDots() {
-    this.dots = _.zip.apply(_, this.dots);
     // rotates the array counterclockwise
     this.selectedDots.forEach(dot => {
       this.deleteDot(dot.id);
     })
-    debugger;
-    for (let i = 0; i < this.dots.length; i++) {
-      for (let j = 0; j < this.dots[i].length; j++) {
-        const currentDot = this.dots[i][j];
-        if(currentDot.deleted) {
-          currentDot.deleted = true;
-          // this.dots[i] = this.dots[i].filter(dot => dot.id !== currentDot.id)
-        } 
-      }
-    }
+    // debugger;
+    // for (let i = 0; i < this.dotGrid.length; i++) {
+    //   for (let j = 0; j < this.dotGrid[i].length; j++) {
+    //     const currentDot = this.dotGrid[i][j];
+    //     if(currentDot.deleted) {
+    //       currentDot.deleted = true;
+    //       // this.dotGrid[i] = this.dotGrid[i].filter(dot => dot.id !== currentDot.id)
+    //     } 
+    //   }
+    // }
     //need to multiply y by the number of deleted dots in each row;
-    debugger;
+    // debugger;
     // finish up (last step)
-    this.dots = _.zip.apply(_, this.dots);
     
-    this.render();
+    this.grid.render();
     // mark each dot to be removed and transpose the array then... 
     // move all nulls to the start of each array?
     // fill the nulls with newly generated random dots
@@ -236,34 +229,6 @@ class Board {
     this.tempCtx.strokeStyle = this.currentDot.color;
     this.tempCtx.lineWidth = 4;
     this.tempCtx.stroke();
-  }
-
-  makeRow(x, y, numDots) {
-    const dotRow = []
-    while (numDots > 0 ) {
-      dotRow.push(new Dot(x, y, this.ctx))
-      x += 40;
-      numDots--;
-    }
-    this.dots.push(dotRow);
-  }
-
-  makeGrid(rows, y) {
-    while(rows > 0) {
-      this.makeRow(10, y, 6);
-      y += 40;
-      rows--;
-    }    
-  }
-
-  render() {
-    this.clearCanvas();
-    this.dots.flat().forEach(function(dot) {
-      if(dot) {
-        dot.drawBall();
-      }
-      
-    });
   } 
 }
   

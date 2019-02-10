@@ -1,16 +1,16 @@
-import Board from './board';
+import Game from './game';
 
 document.addEventListener('DOMContentLoaded', () => {
   const canvas = document.getElementById('canvas');
   const tempCanvas = document.getElementById('tempCanvas');
 
-  const board = new Board(canvas, tempCanvas);
+  const game = new Game(canvas, tempCanvas);
   
-  $('#canvas').mousedown(function(e) {board.handleMouseDown(e)});
-  $('#canvas').mousemove(function(e) {board.handleMouseMove(e)});
-  $('#canvas').mouseup(function(e) {board.handleMouseUp(e)});
+  $('#canvas').mousedown(function(e) {game.board.handleMouseDown(e)});
+  $('#canvas').mousemove(function(e) {game.board.handleMouseMove(e)});
+  $('#canvas').mouseup(function(e) {game.board.handleMouseUp(e)});
   
-  board.render();
+  game.startGame();
 
 })
 
