@@ -7,7 +7,7 @@ class Board {
     this.canvas = canvas;
     this.tempCanvas = tempCanvas;
     this.ctx = canvas.getContext("2d");
-    this.tempCtx = tempCanvas.getContext("2d")
+    this.tempCtx = tempCanvas.getContext("2d");
     this.canvasOffset = $("#canvas").offset();
     this.canvasX = this.canvasOffset.left;
     this.canvasY = this.canvasOffset.top;
@@ -16,6 +16,7 @@ class Board {
     this.currentDot = null;
     this.isDown = false;
     this.isSquare = false;
+    this.deletedPositions = [];
     
     // makeGrid(number of rows, position of first dot)
     // use zip when eliminating dots ? _.zip.apply(_, [[1,2,3], [1,2,3], [1,2,3]])
@@ -49,20 +50,20 @@ class Board {
         return;
       } 
       else {
-        debugger
+        // debugger
         return this.getDot(pos) && 
         this.getDot(pos).colorId === colorId
       }
     })
       .map(pos => this.getDot(pos));
       //  console.log(this.legalMoves);
-      this.legalMoves.forEach(dot => console.log("x", dot.x, "y", dot.y ))
+      // this.legalMoves.forEach(dot => console.log("x", dot.x, "y", dot.y ))
   }
 
-  getLegalMovesById(uuid) {
+  getLegalMovesById(id) {
     for (let i = 0; i < this.dots.length; i++) {
       for (let j = 0; j < this.dots[i].length; j++) {
-        if(this.dots[i][j].id == uuid) {
+        if(this.dots[i][j].id == id) {
           return this.updateLegalMoves([i,j]);
         } 
       }
@@ -90,9 +91,12 @@ class Board {
         ) {
           this.tempCtx.clearRect(0,0,this.tempCanvas.width,this.tempCanvas.height);
           if(!this.currentDot) {
+            console.log('currentDotX', dot.x);
+            console.log('currentDotY', dot.y);
             this.selectedDots.push(dot);
             this.getLegalMovesById(dot.id);
             this.currentDot = dot;
+            
           } 
         }
     })
@@ -135,26 +139,71 @@ class Board {
           this.getLegalMovesById(dot.id)
         } 
       })
-    // }
-
-    
+    // }    
   }
 
   handleMouseUp(e) {
     e.preventDefault();
     if(!this.isDown) return;
+    
+    // Remove dots
+    // trigger new dots dropping
+    // check for this.isSquare
+      // else remove dots in the array
+    if(this.selectedDots.length > 1) {
+      this.handleRemoveDots();
+    }
+    
     this.isDown = false;
     this.currentDot = null;
     this.selectedDots = [];
     this.clearTempCanvas();
 
-    // Remove dots
-    // trigger new dots dropping
-    
-    this.dots.flat().forEach(dot => {
-      // check for this.isSquare
-      // else remove dots in the array
+  }
+
+  deleteDot(id) {
+    for (let i = 0; i < this.dots.length; i++) {
+      for (let j = 0; j < this.dots[i].length; j++) {
+        const currentDot = this.dots[i][j];
+        if(currentDot.id == id && !currentDot.deleted) {
+          currentDot.deleted = true;
+          // this.dots[i] = this.dots[i].filter(dot => dot.id !== currentDot.id)
+          // this.dots[i].unshift(currentDot);
+        } 
+      }
+    }
+  }
+
+  handleRemoveDots() {
+    this.dots = _.zip.apply(_, this.dots);
+    // rotates the array counterclockwise
+    this.selectedDots.forEach(dot => {
+      this.deleteDot(dot.id);
     })
+    debugger;
+    for (let i = 0; i < this.dots.length; i++) {
+      for (let j = 0; j < this.dots[i].length; j++) {
+        const currentDot = this.dots[i][j];
+        if(currentDot.deleted) {
+          currentDot.deleted = true;
+          // this.dots[i] = this.dots[i].filter(dot => dot.id !== currentDot.id)
+        } 
+      }
+    }
+    //need to multiply y by the number of deleted dots in each row;
+    debugger;
+    // finish up (last step)
+    this.dots = _.zip.apply(_, this.dots);
+    
+    this.render();
+    // mark each dot to be removed and transpose the array then... 
+    // move all nulls to the start of each array?
+    // fill the nulls with newly generated random dots
+    // transpose array again
+  }
+
+  clearCanvas() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
   clearTempCanvas() {
@@ -208,8 +257,12 @@ class Board {
   }
 
   render() {
+    this.clearCanvas();
     this.dots.flat().forEach(function(dot) {
-      dot.drawBall();
+      if(dot) {
+        dot.drawBall();
+      }
+      
     });
   } 
 }

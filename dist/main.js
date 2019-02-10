@@ -17559,7 +17559,8 @@ function () {
     this.legalMoves = [];
     this.currentDot = null;
     this.isDown = false;
-    this.isSquare = false; // makeGrid(number of rows, position of first dot)
+    this.isSquare = false;
+    this.deletedPositions = []; // makeGrid(number of rows, position of first dot)
     // use zip when eliminating dots ? _.zip.apply(_, [[1,2,3], [1,2,3], [1,2,3]])
     // TO DO: Feb 9th: finish figuring out backing off when a square is made 
 
@@ -17585,23 +17586,20 @@ function () {
             console.log('running');
             return;
           } else {
-            debugger;
+            // debugger
             return _this.getDot(pos) && _this.getDot(pos).colorId === colorId;
           }
       }).map(function (pos) {
         return _this.getDot(pos);
       }); //  console.log(this.legalMoves);
-
-      this.legalMoves.forEach(function (dot) {
-        return console.log("x", dot.x, "y", dot.y);
-      });
+      // this.legalMoves.forEach(dot => console.log("x", dot.x, "y", dot.y ))
     }
   }, {
     key: "getLegalMovesById",
-    value: function getLegalMovesById(uuid) {
+    value: function getLegalMovesById(id) {
       for (var i = 0; i < this.dots.length; i++) {
         for (var j = 0; j < this.dots[i].length; j++) {
-          if (this.dots[i][j].id == uuid) {
+          if (this.dots[i][j].id == id) {
             return this.updateLegalMoves([i, j]);
           }
         }
@@ -17629,6 +17627,9 @@ function () {
           _this2.tempCtx.clearRect(0, 0, _this2.tempCanvas.width, _this2.tempCanvas.height);
 
           if (!_this2.currentDot) {
+            console.log('currentDotX', dot.x);
+            console.log('currentDotY', dot.y);
+
             _this2.selectedDots.push(dot);
 
             _this2.getLegalMovesById(dot.id);
@@ -17680,22 +17681,75 @@ function () {
 
           _this3.getLegalMovesById(dot.id);
         }
-      }); // }
+      }); // }    
     }
   }, {
     key: "handleMouseUp",
     value: function handleMouseUp(e) {
       e.preventDefault();
-      if (!this.isDown) return;
+      if (!this.isDown) return; // Remove dots
+      // trigger new dots dropping
+      // check for this.isSquare
+      // else remove dots in the array
+
+      if (this.selectedDots.length > 1) {
+        this.handleRemoveDots();
+      }
+
       this.isDown = false;
       this.currentDot = null;
       this.selectedDots = [];
-      this.clearTempCanvas(); // Remove dots
-      // trigger new dots dropping
+      this.clearTempCanvas();
+    }
+  }, {
+    key: "deleteDot",
+    value: function deleteDot(id) {
+      for (var i = 0; i < this.dots.length; i++) {
+        for (var j = 0; j < this.dots[i].length; j++) {
+          var currentDot = this.dots[i][j];
 
-      this.dots.flat().forEach(function (dot) {// check for this.isSquare
-        // else remove dots in the array
+          if (currentDot.id == id && !currentDot.deleted) {
+            currentDot.deleted = true; // this.dots[i] = this.dots[i].filter(dot => dot.id !== currentDot.id)
+            // this.dots[i].unshift(currentDot);
+          }
+        }
+      }
+    }
+  }, {
+    key: "handleRemoveDots",
+    value: function handleRemoveDots() {
+      var _this4 = this;
+
+      this.dots = lodash__WEBPACK_IMPORTED_MODULE_0___default.a.zip.apply(lodash__WEBPACK_IMPORTED_MODULE_0___default.a, this.dots); // rotates the array counterclockwise
+
+      this.selectedDots.forEach(function (dot) {
+        _this4.deleteDot(dot.id);
       });
+      debugger;
+
+      for (var i = 0; i < this.dots.length; i++) {
+        for (var j = 0; j < this.dots[i].length; j++) {
+          var currentDot = this.dots[i][j];
+
+          if (currentDot.deleted) {
+            currentDot.deleted = true; // this.dots[i] = this.dots[i].filter(dot => dot.id !== currentDot.id)
+          }
+        }
+      } //need to multiply y by the number of deleted dots in each row;
+
+
+      debugger; // finish up (last step)
+
+      this.dots = lodash__WEBPACK_IMPORTED_MODULE_0___default.a.zip.apply(lodash__WEBPACK_IMPORTED_MODULE_0___default.a, this.dots);
+      this.render(); // mark each dot to be removed and transpose the array then... 
+      // move all nulls to the start of each array?
+      // fill the nulls with newly generated random dots
+      // transpose array again
+    }
+  }, {
+    key: "clearCanvas",
+    value: function clearCanvas() {
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
   }, {
     key: "clearTempCanvas",
@@ -17763,8 +17817,11 @@ function () {
   }, {
     key: "render",
     value: function render() {
+      this.clearCanvas();
       this.dots.flat().forEach(function (dot) {
-        dot.drawBall();
+        if (dot) {
+          dot.drawBall();
+        }
       });
     }
   }]);
@@ -17805,6 +17862,7 @@ function () {
   function Dot(x, y, ctx) {
     _classCallCheck(this, Dot);
 
+    this.deleted = false;
     this.id = uuid__WEBPACK_IMPORTED_MODULE_1___default()();
     this.ballRadius = 10;
     this.ctx = ctx;
@@ -17812,6 +17870,8 @@ function () {
     this.y = y;
     this.px = this.x - this.ballRadius;
     this.py = this.y - this.ballRadius;
+    this.row = this.py / 40;
+    this.col = this.px / 40;
     this.height = 20;
     this.width = 20;
     this.color = lodash__WEBPACK_IMPORTED_MODULE_0___default.a.sample(COLORS);
@@ -17823,7 +17883,7 @@ function () {
     value: function drawBall() {
       this.ctx.beginPath();
       this.ctx.arc(this.x, this.y, this.ballRadius, 0, Math.PI * 2);
-      this.ctx.fillStyle = this.color;
+      this.ctx.fillStyle = this.deleted ? '#ccc' : this.color;
       this.ctx.fill();
       this.ctx.closePath();
     }
