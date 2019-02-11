@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import uuid from 'uuid';
 
-const COLORS = ['red', 'blue', 'green'];
+const COLORS = ['red', 'blue','green','orange'];
 
 class Dot {
   constructor(x,y,ctx, animated = false, animatedYStart = -10) {
@@ -33,7 +33,7 @@ class Dot {
   drawDot() {
     this.ctx.beginPath();
     if(this.animated && this.animateYStart <= this.y) {
-      const speed = 40;
+      const speed = 25;
       this.ctx.arc(this.x, this.animateYStart, this.ballRadius, 0, Math.PI*2);
       this.animateYStart += speed;
     } else {

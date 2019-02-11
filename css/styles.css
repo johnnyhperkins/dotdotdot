@@ -1,14 +1,38 @@
+
+
 body { 
   padding: 0; 
   margin: 0; 
+  font-family: 'Gochi Hand', Arial, sans-serif;
+  color: #333;
+}
+
+h1 {
+  font-size: 4rem;
+  text-align: center;
+  margin-bottom: 0px;
+  color: #333;
+}
+
+p {
+  font-size: 1.2rem;
+}
+
+.center {
+  text-align:center;
+}
+
+aside {
+  margin: 50px auto;
+  text-align: center;
 }
 
 .wrapper {
   position:relative;
   width: 220px;
   height: 220px;
-  margin: 100px auto 0 auto; 
-  background: #ccc;
+  margin: 50px auto 0 auto; 
+  /* background: #ccc; */
 }
 
 #canvas, #tempCanvas { 
@@ -18,4 +42,21 @@ body {
   width:100%;
   height:100%;
   display: block;
+}
+
+.social-icons a {
+  display: inline-block;
+  height: 3.5rem;
+  width: 3.5rem;
+  background-color: #888; 
+  color: #fff !important;
+  border-radius: 100%;
+  text-align: center;
+  font-size: 1.7rem;
+  line-height: 4.2rem;
+  margin-right: 1rem;
+}
+
+.social-icons a:last-child {
+  margin-right: 0;
 }
