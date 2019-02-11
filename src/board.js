@@ -16,25 +16,21 @@ class Board {
     this.currentDot = null;
     this.isDown = false;
     this.isSquare = false;
-    this.deletedPositions = [];
 
     this.grid = new Grid(6,10, canvas, ctx);
     this.dotGrid = this.grid.grid;
-    
-    // board.makeGrid(number of rows)
-  
   }
 
   updateLegalMoves(pos) {
     // TO DO: Feb 9th: finish figuring out backing off when a square is made 
 
-    const row = pos[0];
-    const col = pos[1];
+    const col = pos[0];
+    const row = pos[1];
     const positions = [
-      [row, col-1],
-      [row, col+1],
-      [row+1, col],
-      [row-1, col]
+      [col, row-1],
+      [col, row+1],
+      [col+1, row],
+      [col-1, row]
     ]
     const colorId = this.grid.getDot(pos).colorId;
 
@@ -45,21 +41,17 @@ class Board {
         this.grid.getDot(pos) && 
         this.grid.getDot(pos).colorId === colorId
       } 
-      // duplicate logic here and in mousemove
       else if(this.selectedDots.length > 1 && 
         this.selectedDots[0].id == _.last(this.selectedDots).id) {
         this.isSquare = true;
-        console.log('running');
         return;
       } 
       else {
-        // debugger
         return this.grid.getDot(pos) && 
         this.grid.getDot(pos).colorId === colorId
       }
     })
       .map(pos => this.grid.getDot(pos));
-      //  console.log(this.legalMoves);
       this.legalMoves.forEach(dot => console.log("x", dot.x, "y", dot.y ))
   }
 
@@ -78,6 +70,8 @@ class Board {
     const mouseX = e.pageX - this.canvasX,
           mouseY = e.pageY - this.canvasY;
     this.currentDot = this.selectedDots.length ? this.selectedDots[0] : null;
+    console.log(this.dotGrid);
+    console.log(this.grid.grid);
     this.dotGrid.flat().forEach(dot => {
       if( mouseY > dot.py && 
           mouseY < (dot.py + dot.height) &&
@@ -91,7 +85,6 @@ class Board {
             this.selectedDots.push(dot);
             this.getLegalMovesById(dot.id);
             this.currentDot = dot;
-            
           } 
         }
     })
@@ -106,9 +99,7 @@ class Board {
           mouseY = e.pageY - this.canvasY;
     
     // starts drawing a line from the center of closest dot to click:
-    // debugger;
     this.currentDot && this.drawMouseLine(
-      // {x: this.selectedDots[-1].x, y: this.selectedDots[-1].y}, 
       {x: this.currentDot.x, y: this.currentDot.y}, 
       {x: mouseX, y: mouseY}
     )
@@ -120,7 +111,7 @@ class Board {
               
           if(this.selectedDots[0].id == dot.id) {
             this.isSquare = true;
-            this.selectedDots.push(dot)
+            this.selectedDots.push(dot);
           } else if( !this.selectedDots.includes(dot) ) {
             this.selectedDots.push(dot);
             this.isSquare = false;
@@ -140,11 +131,6 @@ class Board {
   handleMouseUp(e) {
     e.preventDefault();
     if(!this.isDown) return;
-    
-    // Remove dots
-    // trigger new dots dropping
-    // check for this.isSquare
-      // else remove dots in the array
     if(this.selectedDots.length > 1) {
       this.handleRemoveDots();
     }
@@ -152,47 +138,24 @@ class Board {
     this.isDown = false;
     this.currentDot = null;
     this.selectedDots = [];
+    this.isSquare = false;
     this.clearTempCanvas();
-
   }
 
-  deleteDot(id) {
-    for (let i = 0; i < this.dotGrid.length; i++) {
-      for (let j = 0; j < this.dotGrid[i].length; j++) {
-        const currentDot = this.dotGrid[i][j];
-        if(currentDot.id == id && !currentDot.deleted) {
-          currentDot.deleted = true;
-          // this.dotGrid[i] = this.dotGrid[i].filter(dot => dot.id !== currentDot.id)
-          // this.dotGrid[i].unshift(currentDot);
-        } 
-      }
-    }
+  handleSquare() {
+    let colorId = this.currentDot.colorId;
+    this.selectedDots = this.dotGrid.flat().filter(dot => dot.colorId === colorId)
   }
 
   handleRemoveDots() {
-    // rotates the array counterclockwise
+    this.isSquare && this.handleSquare();
     this.selectedDots.forEach(dot => {
-      this.deleteDot(dot.id);
+      this.grid.getDot([dot.col, dot.row]).deleted = true;
     })
-    // debugger;
-    // for (let i = 0; i < this.dotGrid.length; i++) {
-    //   for (let j = 0; j < this.dotGrid[i].length; j++) {
-    //     const currentDot = this.dotGrid[i][j];
-    //     if(currentDot.deleted) {
-    //       currentDot.deleted = true;
-    //       // this.dotGrid[i] = this.dotGrid[i].filter(dot => dot.id !== currentDot.id)
-    //     } 
-    //   }
-    // }
-    //need to multiply y by the number of deleted dots in each row;
-    // debugger;
-    // finish up (last step)
+    
+    this.grid.removeDeletedDots();
     
     this.grid.render();
-    // mark each dot to be removed and transpose the array then... 
-    // move all nulls to the start of each array?
-    // fill the nulls with newly generated random dots
-    // transpose array again
   }
 
   clearCanvas() {
