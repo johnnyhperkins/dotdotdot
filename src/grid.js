@@ -1,9 +1,10 @@
 import Dot from './dot';
 
 class Grid {
-  constructor(rows, startingXYPosition, canvas, ctx) {
+  constructor(rows, padding, startingXYPosition, canvas, ctx) {
     this.ctx = ctx;
     this.canvas = canvas;
+    this.padding = padding;
     this.startingXYPosition = startingXYPosition;
     this.grid = [];
     this.rows = rows;
@@ -14,48 +15,15 @@ class Grid {
   getDot(pos) {
     const col = pos[0];
     const row = pos[1];
-    if(row < 0 || row > 5 || col < 0 || col > 5) return false;
+
+    if(
+      row < 0 || 
+      row > this.rows - 1 
+      || col < 0 
+      || col > this.rows - 1
+    ) return false;
+    
     return this.grid[col][row];
-  }
-
-  addDots() {
-    let addedDots = false;
-    while(!addedDots) {
-      addedDots = true;
-      for (let i = 0; i < this.grid.length; i++) {
-        let col = this.grid[i];
-        if(col.length < 6) {
-          addedDots = false;
-          let numDotsToAdd = this.rows - col.length;
-          let counter = 0;
-          let bottomDotX, bottomDotY;
-
-          //check if the whole column was wiped out:
-          if(col[0]) {
-            bottomDotX = col[0].x;
-            bottomDotY = col[0].y;
-          } else {
-            bottomDotX = (i * 40) + 10;
-            bottomDotY = 10;
-          }
-          
-          while( counter < numDotsToAdd) {
-            bottomDotY -= 40
-            
-            this.grid[i].unshift( 
-              new Dot(
-                bottomDotX, 
-                bottomDotY, 
-                this.ctx, 
-                true,
-                ((counter + 1) * -40)
-              )
-            )
-            counter++;
-          }
-        }
-      }
-    }  
   }
 
   removeDeletedDots() {
@@ -82,17 +50,59 @@ class Grid {
         }
       }
     }
-    this.addDots();
 
+    this.addDots();
+  }
+
+  addDots() {
+    let addedDots = false;
+    while(!addedDots) {
+      addedDots = true;
+      for (let i = 0; i < this.grid.length; i++) {
+        let col = this.grid[i];
+        
+        if(col.length < 6) {
+          addedDots = false;
+          let numDotsToAdd = this.rows - col.length;
+          let counter = 0;
+          let bottomDotX, bottomDotY;
+
+          //check if the whole column was wiped out:
+          if(col[0]) {
+            bottomDotX = col[0].x;
+            bottomDotY = col[0].y;
+          } else {
+            bottomDotX = (i * this.padding) + this.startingXYPosition;
+            bottomDotY = this.canvas.height + this.padding - this.startingXYPosition;
+          }
+          
+          while( counter < numDotsToAdd) {
+            bottomDotY -= this.padding
+            this.grid[i].unshift( 
+              new Dot(
+                bottomDotX, 
+                bottomDotY, 
+                this.ctx, 
+                true,
+                ((counter + 1) * -this.padding)
+              )
+            )
+
+            counter++;
+          }
+        }
+      }
+    }  
   }
 
   makeRow(x, y, numDots) {
     const dotRow = []
     while (numDots > 0 ) {
       dotRow.push(new Dot(x, y, this.ctx))
-      y += 40;
+      y += this.padding;
       numDots--;
     }
+
     this.grid.push(dotRow);
   }
 
@@ -104,7 +114,7 @@ class Grid {
         x, 
         this.startingXYPosition, 
         this.rows);
-      x += 40;
+      x += this.padding;
       counter--;
     }    
   }

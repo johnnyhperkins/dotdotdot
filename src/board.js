@@ -16,8 +16,9 @@ class Board {
     this.currentDot = null;
     this.isDown = false;
     this.isSquare = false;
-
-    this.grid = new Grid(6,10, canvas, ctx);
+    
+    // args: numRows, paddingBetweenDots, startingXYPosition
+    this.grid = new Grid(6, 40, 10, canvas, ctx);
     this.dotGrid = this.grid.grid;
   }
 
@@ -70,8 +71,6 @@ class Board {
     const mouseX = e.pageX - this.canvasX,
           mouseY = e.pageY - this.canvasY;
     this.currentDot = this.selectedDots.length ? this.selectedDots[0] : null;
-    console.log(this.dotGrid);
-    console.log(this.grid.grid);
     this.dotGrid.flat().forEach(dot => {
       if( mouseY > dot.py && 
           mouseY < (dot.py + dot.height) &&
