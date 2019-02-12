@@ -28,7 +28,6 @@ class Grid {
       || col < 0 
       || col > this.rows - 1
     ) return false;
-    
     return this.grid[col][row];
   }
 

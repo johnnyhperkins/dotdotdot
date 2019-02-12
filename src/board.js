@@ -31,7 +31,7 @@ class Board {
   }
 
   updateLegalMoves(pos) {
-    // TO DO: Feb 9th: finish figuring out backing off when a square is made 
+    
 
     const col = pos[0];
     const row = pos[1];
@@ -44,16 +44,10 @@ class Board {
     const colorId = this.grid.getDot(pos).colorId;
 
     this.legalMoves = positions.filter(pos => {
-      // TO DO: refactor to be more DRY:
-      if(this.selectedDots.length < 3) {
-        return !this.selectedDots.includes(this.grid.getDot(pos)) && 
-        this.grid.getDot(pos) && 
-        this.grid.getDot(pos).colorId === colorId
-      } 
-      else if(this.selectedDots.length > 1 && 
-        this.selectedDots[0].id == _.last(this.selectedDots).id) {
+      if(this.selectedDots.length > 3 && 
+        this.selectedDots[0].id === _.last(this.selectedDots).id) {
         this.isSquare = true;
-        return;
+        return true;
       } 
       else {
         return this.grid.getDot(pos) && 
@@ -61,10 +55,11 @@ class Board {
       }
     })
       .map(pos => this.grid.getDot(pos));
-      // this.legalMoves.forEach(dot => console.log("x", dot.x, "y", dot.y ))
+      this.legalMoves.forEach(dot => console.log("x", dot.x, "y", dot.y ))
   }
 
   getLegalMovesById(id) {
+    // TO DO: figure out how to use the dots col and row properties
     for (let i = 0; i < this.dotGrid.length; i++) {
       for (let j = 0; j < this.dotGrid[i].length; j++) {
         if(this.dotGrid[i][j].id == id) {
@@ -78,26 +73,26 @@ class Board {
     e.preventDefault();
     const mouseX = e.pageX - this.canvasX,
           mouseY = e.pageY - this.canvasY;
-    // console.log(this.canvasX);
-    // console.log(this.canvasY);
+
     this.currentDot = this.selectedDots.length ? this.selectedDots[0] : null;
     this.dotGrid.flat().forEach(dot => {
       if( !this.grid.isLocked &&
           mouseY > dot.py && 
           mouseY < (dot.py + dot.height) &&
           mouseX > dot.px &&
-          mouseX < (dot.px + dot.width) 
-        ) {
-          this.tempCtx.clearRect(0,0,this.tempCanvas.width,this.tempCanvas.height);
-          if(!this.currentDot) {
-            // console.log('currentDotX', dot.x);
-            // console.log('currentDotY', dot.y);
-            this.selectedDots.push(dot);
-            this.getLegalMovesById(dot.id);
-            this.currentDot = dot;
-          } 
-        }
+          mouseX < (dot.px + dot.width) ) {
+
+        this.tempCtx.clearRect(0,0,this.tempCanvas.width,this.tempCanvas.height);
+
+        if(!this.currentDot) {
+          this.selectedDots.push(dot);
+          // this.updateLegalMoves([dot.row,dot.col]);
+          this.getLegalMovesById(dot.id);
+          this.currentDot = dot;
+        } 
+      }
     })
+
     this.isDown = true;
   }
 
@@ -114,33 +109,33 @@ class Board {
       {x: mouseX, y: mouseY}
     )
     
-    // if(!this.isSquare) {
-      this.legalMoves.forEach(dot => {
-        if( mouseY > dot.py && mouseY < dot.py + dot.height && 
-            mouseX > dot.px && mouseX < dot.px + dot.width ) {
-              
-          if(this.selectedDots[0].id == dot.id) {
-            this.isSquare = true;
-            this.selectedDots.push(dot);
-          } else if( !this.selectedDots.includes(dot) ) {
-            this.selectedDots.push(dot);
-            this.isSquare = false;
-          }  else {
-            this.selectedDots.pop();
-            this.isSquare = false;
-          } 
-          
-          this.currentDot = dot;
-          // console.log('selectedDots:', this.selectedDots);
-          this.getLegalMovesById(dot.id)
+    this.legalMoves.forEach(dot => {
+      if( mouseY > dot.py && mouseY < dot.py + dot.height && 
+          mouseX > dot.px && mouseX < dot.px + dot.width ) {
+
+        if(this.selectedDots[0].id == dot.id && 
+          this.selectedDots.length !== 2) {
+          this.isSquare = true;
+          this.selectedDots.push(dot);
+        } else if(!this.selectedDots.includes(dot)) {
+          this.selectedDots.push(dot);
+          this.isSquare = false;
+        } else {
+          this.selectedDots.pop();
+          this.isSquare = false;
         } 
-      })
-    // }    
+        
+        this.currentDot = dot;
+
+        this.getLegalMovesById(dot.id)
+      } 
+    })
   }
 
   handleMouseUp(e) {
     e.preventDefault();
     if(!this.isDown) return;
+    debugger;
     if(this.selectedDots.length > 1) {
       this.handleRemoveDots();
     }

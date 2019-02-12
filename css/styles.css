@@ -168,6 +168,12 @@ aside {
   font-size: 10px;
 }
 
+.score {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
 .level-moves-container {
 	display:flex;
 	align-content: flex-start;

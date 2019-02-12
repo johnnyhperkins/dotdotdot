@@ -16,21 +16,26 @@ class Game {
 
     this.levelEl = $('.level');
     this.movesRemainingEl = $('.moves-remaining');
+    this.levelScore = $('.level-score');
+    this.totalScore = $('.total-score');
 
     this.level = 1;
+    this.score = {}; 
     
     this.dotsToPop;
     this.dotsPopped;
     this.movesRemaining;
     this.dotColorsToPop;
     this.dotColorsToPopIds;
-    this.game = this;
+       
     this.board = new Board(
       this.canvas,
       this.tempCanvas, 
       this.ctx, 
       this.tempCtx,
       this);
+    
+    Object.keys(LEVELS).forEach(level => this.score[level] = 0);
   }
 
   updateLevel() {
@@ -43,8 +48,8 @@ class Game {
   }
 
   nextLevel() {
+    this.level += 1;
     if(this.level < 6) {
-      this.level += 1;
       this.board.createNewGrid();
       this.startGame(this.level);
     } else {
@@ -52,6 +57,15 @@ class Game {
       this.winLossWrapper.append($('<button class="restart-game">Reset Game</button>'));
       $('.restart-game').on('click', this.restartGame.bind(this));
     }
+  }
+
+  getTotalScore() {
+    return Object.values(this.score).reduce((acc,val) => acc + val, 0);
+  }
+
+  renderScore() {
+    this.levelScore.text(this.score[this.level]);
+    this.totalScore.text(this.getTotalScore());
   }
 
   restartLevel() {
@@ -77,6 +91,8 @@ class Game {
       $('.next-level').on('click', this.nextLevel.bind(this));
 
     } else if(this.movesRemaining == 0) {
+      this.score[this.level] = 0;
+      this.renderScore();
       this.board.grid.lockDots();
       this.winLossWrapper.append(
         $('<p>You Lost...</p><button class="restart-level">Restart</button>')
@@ -87,17 +103,23 @@ class Game {
   }
 
   updateScore(dotsPopped, dotColorId) {
+    this.score[this.level] += dotsPopped;
+    this.renderScore();
+
     if(this.dotColorsToPopIds.includes(dotColorId)) {
       this.dotsPopped[dotColorId] += dotsPopped;
       if(this.dotsPopped[dotColorId] >= this.dotsToPop) {
         const color = COLORS[dotColorId];
-        $(`#${color}`).find('.dot-score-wrapper').empty().append($('<h5><i class="fas fa-check"></i></h5>'));
+        $(`#${color}`)
+        .find('.dot-score-wrapper')
+        .empty()
+        .append($('<h5><i class="fas fa-check"></i></h5>'));
       }
       
     }
     --this.movesRemaining;
     this.gameWon();
-    this.populateScoreboard();
+    this.renderScoreboard();
   }
 
   createScoreBoard() {
@@ -117,7 +139,7 @@ class Game {
     });
   }
 
-  populateScoreboard() {
+  renderScoreboard() {
     this.movesRemainingEl.text(this.movesRemaining);
     
     this.dotColorsToPop.forEach(color => {
@@ -131,7 +153,8 @@ class Game {
     this.winLossWrapper.empty();
     this.updateLevel();
     this.createScoreBoard();
-    this.populateScoreboard();    
+    this.renderScoreboard();
+    this.renderScore(); 
     this.board.grid.render();
   }
 }
