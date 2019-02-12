@@ -3,7 +3,7 @@ import Grid from './grid';
 
 
 class Board {
-  constructor(canvas, tempCanvas, ctx, tempContext) {
+  constructor(canvas, tempCanvas, ctx, tempContext, game) {
     this.canvas = canvas;
     this.tempCanvas = tempCanvas;
     this.ctx = ctx;
@@ -16,9 +16,17 @@ class Board {
     this.currentDot = null;
     this.isDown = false;
     this.isSquare = false;
+    this.game = game;
     
     // args: numRows, paddingBetweenDots, startingXYPosition
     this.grid = new Grid(6, 40, 10, canvas, ctx);
+    this.dotGrid = this.grid.grid;
+  }
+
+  createNewGrid() {
+    this.grid.clearGridInterval();
+    this.grid.clearCanvas();
+    this.grid = new Grid(6, 40, 10, this.canvas, this.ctx);
     this.dotGrid = this.grid.grid;
   }
 
@@ -70,9 +78,12 @@ class Board {
     e.preventDefault();
     const mouseX = e.pageX - this.canvasX,
           mouseY = e.pageY - this.canvasY;
+    console.log(this.canvasX);
+    console.log(this.canvasY);
     this.currentDot = this.selectedDots.length ? this.selectedDots[0] : null;
     this.dotGrid.flat().forEach(dot => {
-      if( mouseY > dot.py && 
+      if( !this.grid.isLocked &&
+          mouseY > dot.py && 
           mouseY < (dot.py + dot.height) &&
           mouseX > dot.px &&
           mouseX < (dot.px + dot.width) 
@@ -96,7 +107,7 @@ class Board {
     
     const mouseX = e.pageX - this.canvasX,
           mouseY = e.pageY - this.canvasY;
-    
+
     // starts drawing a line from the center of closest dot to click:
     this.currentDot && this.drawMouseLine(
       {x: this.currentDot.x, y: this.currentDot.y}, 
@@ -151,10 +162,10 @@ class Board {
     this.selectedDots.forEach(dot => {
       this.grid.getDot([dot.col, dot.row]).deleted = true;
     })
+
+    this.game.updateScore(this.selectedDots.length,this.currentDot.colorId);
     
     this.grid.removeDeletedDots();
-    
-    this.grid.render();
   }
 
   clearCanvas() {

@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#canvas').mousemove(function(e) {game.board.handleMouseMove(e)});
   $('#canvas').mouseup(function(e) {game.board.handleMouseUp(e)});
   
-  game.startGame();
+  game.startGame(2);
 
 })
 

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <link href="https://fonts.googleapis.com/css?family=Gochi+Hand" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Gochi+Hand|Raleway:700,400" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="vendor/fontawesome-free/css/all.min.css">
   <script
@@ -15,13 +15,35 @@
   <title>Dot Dot Dot</title>
 </head>
 <body>
-  <h1 class="banner">Dot Dot .</h1> 
-  <p class="center">Connect dots with your mouse</p>
-  <p class="center">Make a box and all dots of the same color disappear!</p>
-  <div class="wrapper">
+  <main>
+    <header>
+      <h1 class="banner">Dot Dot .</h1> 
+      <p class="center">Connect dots with your mouse.</p>
+      <p class="center">Make a box and all dots of the same color disappear!</p>
+    </header>
+    <section class="center controls">
+      <div class="level-moves-container">
+        <div class="level-wrapper center">
+          <h2 class="level"></h2>
+          <h5>level</h5>
+        </div>
+        <div class="moves-wrapper center">
+          <h2 class="moves-remaining"></h2>
+          <h5>moves</h5>
+        </div>
+      </div>
+      <div class="scoreboard-wrapper flex">
+      </div>
+    </section>
+  </main>
+  <div class="canvas-wrapper">
     <canvas id="tempCanvas" width="220" height="220"></canvas>
     <canvas id="canvas" width="220" height="220"></canvas>
   </div>
+  <section>
+    <div class="win-loss-wrapper">
+    </div>
+  </section>
   <aside>
     <p>By <a href="http://johnnyhperkins.com">Johnny Perkins</a></p>
     <div class="social-icons">

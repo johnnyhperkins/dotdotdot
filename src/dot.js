@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import uuid from 'uuid';
-
-const COLORS = ['red', 'blue', 'green', 'orange'];
+import { COLORS } from './constants/colors';
 
 class Dot {
   constructor(x, y, ctx, animated = false, animatedYStart = -10, padding = 40) {
@@ -21,7 +20,7 @@ class Dot {
     this.height = this.padding / 2;
     this.width = this.padding / 2;
     this.color = _.sample(COLORS);
-    this.colorId = COLORS.indexOf(this.color) + 1;
+    this.colorId = COLORS.indexOf(this.color);
   }
 
   updateDot() {
@@ -34,7 +33,7 @@ class Dot {
   drawDot() {
     this.ctx.beginPath();
     if(this.animated && this.animateYStart <= this.y) {
-      const speed = this.padding;
+      const speed = this.padding / 1.5;
       this.ctx.arc(this.x, this.animateYStart, this.ballRadius, 0, Math.PI*2);
       this.animateYStart += speed;
     } else {

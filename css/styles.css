@@ -1,10 +1,126 @@
+/* RESET */
+
+* {
+	box-sizing: border-box;
+}
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+body {
+	line-height: 1;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
 
 
-body { 
-  padding: 0; 
-  margin: 0; 
-  font-family: 'Gochi Hand', Arial, sans-serif;
+body {
+  padding: 35px 0 0 0;
+  margin: 0;
+  font-family: 'Raleway', Arial, sans-serif;
   color: #333;
+}
+
+main {
+  min-height: 198px;
+  max-height: 198px;
+}
+
+header p {
+  font-family: 'Gochi Hand', Arial, sans-serif;
+}
+
+section {
+  max-width: 220px;
+  margin: 0 auto;
+}
+
+section.controls {
+	display:flex;
+	justify-content:space-between;
+	align-items:flex-start;
+	min-height: 50px;
+	padding: 15px 0;
+	box-shadow: 0px 8px 8px -5px rgba(0,0,0,0.1);
+}
+
+.level-moves-container {
+	display:flex;
+	align-content: flex-start;
+}
+
+.level-wrapper {
+	margin-right: 15px;
+}
+
+.win-loss-wrapper {
+	min-height: 50px;
+	justify-content: space-between;
+	display: flex;
+	align-items: baseline;
+	padding-top: 15px;
+	box-shadow: 0px -8px 8px -5px rgba(0,0,0,0.1);
+}
+
+.win-loss-wrapper p {
+	font-weight:bold;
+	font-size: 18px;
+	margin-bottom: 0;
+}
+
+.win-loss-wrapper button {
+	border:none;
+	background-color: rgb(77, 207, 99);
+	color: white;
+	padding: 10px 25px;
+	border-radius: 2px;
+	text-transform: uppercase;
+	transition:.1s ease-in-out all;
+	cursor:pointer;
+}
+
+.win-loss-wrapper button:hover {
+	background-color: rgb(64, 165, 81);
+}
+
+a {
+  text-decoration: none;
+  color: #888888;
 }
 
 h1 {
@@ -12,14 +128,40 @@ h1 {
   text-align: center;
   margin-bottom: 0px;
   color: #333;
+  font-family: 'Gochi Hand', Arial, sans-serif;
+}
+
+h2 {
+  margin:0;
+  font-weight: 400;
+  font-size: 22px;
+}
+
+h5 {
+  font-size: 10px;
+  text-transform: uppercase;
+  font-weight: bold;
+  margin: 0;
+  display:inline-block;
 }
 
 p {
-  font-size: 1.2rem;
+  font-size: 1rem;
+  margin-bottom: 16px;
 }
 
 .center {
   text-align:center;
+}
+
+.flex {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: flex-end;
+}
+
+.target-color-wrapper {
+	margin-left: 16px;
 }
 
 aside {
@@ -27,12 +169,11 @@ aside {
   text-align: center;
 }
 
-.wrapper {
+.canvas-wrapper {
   position:relative;
   width: 220px;
   height: 220px;
-  margin: 50px auto 0 auto; 
-  /* background: #ccc; */
+  margin: 30px auto 30px auto;
 }
 
 #canvas, #tempCanvas { 
@@ -48,15 +189,26 @@ aside {
   display: inline-block;
   height: 3.5rem;
   width: 3.5rem;
-  background-color: #888; 
+  background-color: #888;
   color: #fff !important;
   border-radius: 100%;
   text-align: center;
   font-size: 1.7rem;
-  line-height: 4.2rem;
+  line-height: 3.5rem;
   margin-right: 1rem;
 }
 
 .social-icons a:last-child {
   margin-right: 0;
+}
+
+.tiny {
+  font-size: 10px;
+}
+
+.scoreboard-wrapper .target-color {
+  width: 20px;
+  height: 20px;
+  display:inline-block;
+  border-radius: 50%;
 }

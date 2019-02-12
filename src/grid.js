@@ -8,8 +8,14 @@ class Grid {
     this.startingXYPosition = startingXYPosition;
     this.grid = [];
     this.rows = rows;
+    this.isLocked = false;
     this.makeGrid(rows);
-    setInterval(this.render.bind(this), 33)
+    this.interval = setInterval(this.render.bind(this), 33);
+    this.interval;
+  }
+
+  clearGridInterval() {
+    clearInterval(this.interval);
   }
 
   getDot(pos) {
@@ -24,6 +30,10 @@ class Grid {
     ) return false;
     
     return this.grid[col][row];
+  }
+
+  lockDots() {
+    this.isLocked = true;
   }
 
   removeDeletedDots() {
@@ -93,6 +103,7 @@ class Grid {
         }
       }
     }  
+    this.render();
   }
 
   makeRow(x, y, numDots) {
@@ -118,6 +129,7 @@ class Grid {
       counter--;
     }    
   }
+
   clearCanvas() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
