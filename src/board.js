@@ -61,7 +61,7 @@ class Board {
       }
     })
       .map(pos => this.grid.getDot(pos));
-      this.legalMoves.forEach(dot => console.log("x", dot.x, "y", dot.y ))
+      // this.legalMoves.forEach(dot => console.log("x", dot.x, "y", dot.y ))
   }
 
   getLegalMovesById(id) {
@@ -78,8 +78,8 @@ class Board {
     e.preventDefault();
     const mouseX = e.pageX - this.canvasX,
           mouseY = e.pageY - this.canvasY;
-    console.log(this.canvasX);
-    console.log(this.canvasY);
+    // console.log(this.canvasX);
+    // console.log(this.canvasY);
     this.currentDot = this.selectedDots.length ? this.selectedDots[0] : null;
     this.dotGrid.flat().forEach(dot => {
       if( !this.grid.isLocked &&
@@ -90,8 +90,8 @@ class Board {
         ) {
           this.tempCtx.clearRect(0,0,this.tempCanvas.width,this.tempCanvas.height);
           if(!this.currentDot) {
-            console.log('currentDotX', dot.x);
-            console.log('currentDotY', dot.y);
+            // console.log('currentDotX', dot.x);
+            // console.log('currentDotY', dot.y);
             this.selectedDots.push(dot);
             this.getLegalMovesById(dot.id);
             this.currentDot = dot;
@@ -131,7 +131,7 @@ class Board {
           } 
           
           this.currentDot = dot;
-          console.log('selectedDots:', this.selectedDots);
+          // console.log('selectedDots:', this.selectedDots);
           this.getLegalMovesById(dot.id)
         } 
       })

@@ -16,7 +16,7 @@ class Game {
 
     this.levelEl = $('.level');
     this.movesRemainingEl = $('.moves-remaining');
-    
+
     this.level = 1;
     
     this.dotsToPop;
@@ -34,11 +34,12 @@ class Game {
   }
 
   updateLevel() {
-    this.dotsToPop = LEVELS[this.level].dotsToPop;
-    this.dotsPopped = LEVELS[this.level].dotsPopped;
-    this.movesRemaining = LEVELS[this.level].movesRemaining;
-    this.dotColorsToPop = LEVELS[this.level].dotColorsToPop;
-    this.dotColorsToPopIds = LEVELS[this.level].dotColorsToPopIds;
+    let GAME_LEVELS = _.merge({}, LEVELS);
+    this.dotsToPop = GAME_LEVELS[this.level].dotsToPop;
+    this.dotsPopped = GAME_LEVELS[this.level].dotsPopped;
+    this.movesRemaining = GAME_LEVELS[this.level].movesRemaining;
+    this.dotColorsToPop = GAME_LEVELS[this.level].dotColorsToPop;
+    this.dotColorsToPopIds = GAME_LEVELS[this.level].dotColorsToPopIds;
   }
 
   nextLevel() {
@@ -49,9 +50,8 @@ class Game {
     } else {
       this.winLossWrapper.empty().append('<p>You won the game!</p>')
       this.winLossWrapper.append($('<button class="restart-game">Reset Game</button>'));
-      $('.restart-level').on('click', this.restartGame.bind(this));
+      $('.restart-game').on('click', this.restartGame.bind(this));
     }
-    
   }
 
   restartLevel() {
@@ -77,8 +77,9 @@ class Game {
       $('.next-level').on('click', this.nextLevel.bind(this));
 
     } else if(this.movesRemaining == 0) {
+      this.board.grid.lockDots();
       this.winLossWrapper.append(
-        $('<p>You Lost...</p><button class="restart">Restart</button>')
+        $('<p>You Lost...</p><button class="restart-level">Restart</button>')
       );
       $('.restart-level').on('click', this.restartLevel.bind(this));
 
@@ -94,8 +95,8 @@ class Game {
       }
       
     }
-    this.gameWon();
     --this.movesRemaining;
+    this.gameWon();
     this.populateScoreboard();
   }
 
