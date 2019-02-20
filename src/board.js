@@ -51,9 +51,9 @@ class Board {
         return this.grid.getDot(pos) && 
         this.grid.getDot(pos).colorId === colorId
       }
-    })
-      .map(pos => this.grid.getDot(pos));
-      this.legalMoves.forEach(dot => console.log("x", dot.x, "y", dot.y ))
+    }).map(pos => this.grid.getDot(pos));
+      
+    this.legalMoves.forEach(dot => console.log("x", dot.x, "y", dot.y ))
   }
 
   getLegalMovesById(id) {

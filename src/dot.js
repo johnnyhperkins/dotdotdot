@@ -42,7 +42,7 @@ class Dot {
     console.log();
     let startingRadius = this.ballRadius;
     let endingRadius = this.ballRadius + 5;
-    let animationSpeed = .1;
+    let animationSpeed = .01;
 
     while(startingRadius < endingRadius) {
       this.ctx.beginPath();
@@ -66,7 +66,7 @@ class Dot {
     this.ctx.beginPath();
 
     if(this.animated && this.animateYStart <= this.y) {
-      const speed = this.padding / 2.5;
+      const speed = this.padding / 1.5;
       this.ctx.arc(this.x, this.animateYStart, this.ballRadius, 0, Math.PI*2);
       this.animateYStart += speed;
     } else {

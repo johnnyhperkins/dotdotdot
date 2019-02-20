@@ -10,7 +10,7 @@ class Grid {
     this.rows = rows;
     this.isLocked = false;
     this.makeGrid(rows);
-    this.interval = setInterval(this.render.bind(this), 100);
+    this.interval = setInterval(this.render.bind(this), 50);
     this.interval;
   }
 
@@ -43,14 +43,19 @@ class Grid {
       for (let i = 0; i < this.grid.length; i++) {
         for (let j = 0; j < this.grid[i].length; j++) {
           
-          const currentDot = this.grid[i][j];
+          const currentDot = this.getDot([i,j]);
           if(currentDot.deleted) {
             finished = false;
+            const prevDot = this.getDot([i,j-1])
             let updatedY = currentDot.y;
+            
             //if not the first element in the array...
             if(j > 0) {
-              this.getDot([i, j]).y = this.getDot([i, j-1]).y;
-              this.getDot([i, j-1]).y = updatedY;
+              currentDot.y = prevDot.y;
+              prevDot.y = updatedY;
+              prevDot.animated = true;
+              prevDot.animatedYStart = updatedY;
+
               [this.grid[i][j], this.grid[i][j-1]] = [this.grid[i][j-1], this.grid[i][j]]
             } else {
               this.grid[i] = this.grid[i].filter(dot => currentDot.id !== dot.id)
