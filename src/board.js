@@ -31,8 +31,6 @@ class Board {
   }
 
   updateLegalMoves(pos) {
-    
-
     const col = pos[0];
     const row = pos[1];
     const positions = [
@@ -75,6 +73,7 @@ class Board {
           mouseY = e.pageY - this.canvasY;
 
     this.currentDot = this.selectedDots.length ? this.selectedDots[0] : null;
+
     this.dotGrid.flat().forEach(dot => {
       if( !this.grid.isLocked &&
           mouseY > dot.py && 
@@ -85,6 +84,7 @@ class Board {
         this.tempCtx.clearRect(0,0,this.tempCanvas.width,this.tempCanvas.height);
 
         if(!this.currentDot) {
+          dot.animateHighlight();
           this.selectedDots.push(dot);
           // this.updateLegalMoves([dot.row,dot.col]);
           this.getLegalMovesById(dot.id);
@@ -124,7 +124,7 @@ class Board {
           this.selectedDots.pop();
           this.isSquare = false;
         } 
-        
+        dot.animateHighlight()
         this.currentDot = dot;
 
         this.getLegalMovesById(dot.id)
@@ -135,7 +135,7 @@ class Board {
   handleMouseUp(e) {
     e.preventDefault();
     if(!this.isDown) return;
-    debugger;
+
     if(this.selectedDots.length > 1) {
       this.handleRemoveDots();
     }

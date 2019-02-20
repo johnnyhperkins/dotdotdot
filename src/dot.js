@@ -23,6 +23,38 @@ class Dot {
     this.colorId = COLORS.indexOf(this.color);
   }
 
+  getTransparentColor(color) {
+    switch (color) {
+      case 'red':
+        return "rgba(255,0,0,0.3)"
+      case 'green':
+        return "rgba(0,255,0,0.3)"
+      case 'blue':
+        return "rgba(0,0,255,0.3)"
+      case 'orange':
+        return "rgba(245, 164, 49, 0.3)"
+      default:
+        break;
+    }
+  }
+
+  animateHighlight() {
+    console.log();
+    let startingRadius = this.ballRadius;
+    let endingRadius = this.ballRadius + 5;
+    let animationSpeed = .1;
+
+    while(startingRadius < endingRadius) {
+      this.ctx.beginPath();
+      this.ctx.arc(this.x, this.y, startingRadius, 0, Math.PI*2);
+      startingRadius += animationSpeed;
+      this.ctx.fillStyle = this.getTransparentColor(this.color);
+      this.ctx.fill();
+      this.ctx.closePath();
+    }
+    
+  }
+
   updateDot() {
     this.px = this.x - this.ballRadius;
     this.py = this.y - this.ballRadius;
@@ -32,14 +64,16 @@ class Dot {
 
   drawDot() {
     this.ctx.beginPath();
+
     if(this.animated && this.animateYStart <= this.y) {
-      const speed = this.padding / 1.5;
+      const speed = this.padding / 2.5;
       this.ctx.arc(this.x, this.animateYStart, this.ballRadius, 0, Math.PI*2);
       this.animateYStart += speed;
     } else {
       this.animated = false;
       this.ctx.arc(this.x, this.y, this.ballRadius, 0, Math.PI*2);
     }
+
     this.ctx.fillStyle = this.color;
     this.ctx.fill();
     this.ctx.closePath();

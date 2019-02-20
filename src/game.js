@@ -33,7 +33,8 @@ class Game {
       this.tempCanvas, 
       this.ctx, 
       this.tempCtx,
-      this);
+      this
+    );
     
     Object.keys(LEVELS).forEach(level => this.score[level] = 0);
   }

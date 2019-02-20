@@ -10,7 +10,7 @@ class Grid {
     this.rows = rows;
     this.isLocked = false;
     this.makeGrid(rows);
-    this.interval = setInterval(this.render.bind(this), 33);
+    this.interval = setInterval(this.render.bind(this), 100);
     this.interval;
   }
 
@@ -65,6 +65,7 @@ class Grid {
 
   addDots() {
     let addedDots = false;
+
     while(!addedDots) {
       addedDots = true;
       for (let i = 0; i < this.grid.length; i++) {
