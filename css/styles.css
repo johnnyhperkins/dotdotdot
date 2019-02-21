@@ -188,10 +188,23 @@ aside {
 	margin-right: 10px;
 }
 
+.win-loss-wrapper input {
+	margin: 15px 0;
+	padding: 5px 10px;
+	border-radius: 3px;
+	border: 1px solid #ccc;
+	width: 100%;
+}
+
+.win-loss-wrapper button {
+	width: 100%;
+}
+
 .win-loss-wrapper {
 	min-height: 50px;
 	justify-content: space-between;
 	display: flex;
+	flex-direction: column;
 	align-items: baseline;
 	padding-top: 15px;
 	box-shadow: 0px -8px 8px -5px rgba(0,0,0,0.1);

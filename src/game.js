@@ -20,7 +20,7 @@ class Game {
     this.totalScore = $('.total-score');
 
     this.level = 1;
-    this.score = {}; 
+    this.score = {};
     
     this.dotsToPop;
     this.dotsPopped;
@@ -39,6 +39,22 @@ class Game {
     Object.keys(LEVELS).forEach(level => this.score[level] = 0);
   }
 
+  setLocalStorageScore(name) {
+    const scores = window.localStorage
+    const prevScores = scores.getItem('dotHighScores') ? scores.getItem('dotHighScores') : scores.setItem('dotHighScores', {});
+    if(name) {
+      scores.setItem('dotHighScores', {
+        ...prevScores,
+        [`${name}`]: this.totalScore
+      });
+    } else {
+      scores.setItem('dotHighScores', {
+        ...prevScores,
+        Anonymous: this.totalScore
+      })
+    }
+  }
+
   updateLevel() {
     let GAME_LEVELS = _.merge({}, LEVELS);
     this.dotsToPop = GAME_LEVELS[this.level].dotsToPop;
@@ -55,8 +71,12 @@ class Game {
       this.startGame(this.level);
     } else {
       this.winLossWrapper.empty().append('<p>You won the game!</p>')
+      this.winLossWrapper.append($('<input id="name" placeholder="Enter your name" type="text" class="text-input" value="" />'))
       this.winLossWrapper.append($('<button class="restart-game">Reset Game</button>'));
-      $('.restart-game').on('click', this.restartGame.bind(this));
+      
+      // this.setLocalStorageScore($('#name').val())
+        
+      $('.restart-game').on('click', () => this.restartGame.bind(this));
     }
   }
 
