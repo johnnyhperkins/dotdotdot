@@ -38,32 +38,19 @@ class Dot {
     }
   }
 
-  animateHighlight() {
-    let startingRadius = this.ballRadius;
-    let endingRadius = this.ballRadius + 7;
-    let animationSpeed = .1;
-
-    while(startingRadius < endingRadius) {
+  animateBlowUp(startR, endR, speed, upOrDown) {
+    while(startR < endR) {
       this.ctx.beginPath();
-      this.ctx.arc(this.x, this.y, startingRadius, 0, Math.PI*2);
-      startingRadius += animationSpeed;
+      this.ctx.arc(this.x, this.y, startR, 0, Math.PI*2);
+      upOrDown ? startR += speed : startR -= speed;
       this.ctx.fillStyle = this.getTransparentColor(this.color);
-      console.log(this.ctx.fillStyle);
       this.ctx.fill();
-      // this.ctx.closePath();
     }
+  }
 
-    endingRadius = this.ballRadius + 7;
-    startingRadius = this.ballRadius;
-
-    while(endingRadius < startingRadius) {
-      this.ctx.beginPath();
-      this.ctx.arc(this.x, this.y, endingRadius, 0, Math.PI*2);
-      endingRadius -= animationSpeed;
-      this.ctx.fillStyle = this.getTransparentColor(this.color);
-      this.ctx.fill();
-      this.ctx.closePath();
-    } 
+  animateHighlight() {
+    this.animateBlowUp(this.ballRadius, this.ballRadius + 3, .1, true);
+    this.animateBlowUp(this.ballRadius + 3, this.ballRadius, .1, false);
   }
 
   updateDot() {

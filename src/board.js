@@ -43,7 +43,7 @@ class Board {
 
     this.legalMoves = positions.filter(pos => {
       if( this.selectedDots.length > 3 && 
-          this.selectedDots[0].id === _.last(this.selectedDots).id
+          this.selectedDots[0].id === _.last(this.selectedDots).id 
         ) {
         this.isSquare = true;
         return true;
@@ -113,9 +113,14 @@ class Board {
     this.legalMoves.forEach(dot => {
       if( mouseY > dot.py && mouseY < dot.py + dot.height && 
           mouseX > dot.px && mouseX < dot.px + dot.width ) {
-
-        if(this.selectedDots[0].id == dot.id && 
-          this.selectedDots.length !== 2) {
+        const numDots = this.selectedDots.length;
+        if((
+            this.selectedDots[0].id == dot.id && 
+            numDots !== 2 ) || 
+           (numDots > 3 && 
+            this.selectedDots.includes(dot) &&
+          _.last(this.selectedDots).id !== dot.id )
+          ) {
           this.isSquare = true;
           this.selectedDots.push(dot);
         } else if(!this.selectedDots.includes(dot)) {
