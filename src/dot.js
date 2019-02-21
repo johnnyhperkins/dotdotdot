@@ -26,33 +26,44 @@ class Dot {
   getTransparentColor(color) {
     switch (color) {
       case 'red':
-        return "rgba(255,0,0,0.3)"
+        return "rgba(255,0,0,.1)"
       case 'green':
-        return "rgba(0,255,0,0.3)"
+        return "green"
       case 'blue':
-        return "rgba(0,0,255,0.3)"
+        return "rgba(0,0,255,.1)"
       case 'orange':
-        return "rgba(245, 164, 49, 0.3)"
+        return "rgba(245, 164, 49,.1)"
       default:
         break;
     }
   }
 
   animateHighlight() {
-    console.log();
     let startingRadius = this.ballRadius;
-    let endingRadius = this.ballRadius + 5;
-    let animationSpeed = .01;
+    let endingRadius = this.ballRadius + 7;
+    let animationSpeed = .1;
 
     while(startingRadius < endingRadius) {
       this.ctx.beginPath();
       this.ctx.arc(this.x, this.y, startingRadius, 0, Math.PI*2);
       startingRadius += animationSpeed;
       this.ctx.fillStyle = this.getTransparentColor(this.color);
+      console.log(this.ctx.fillStyle);
+      this.ctx.fill();
+      // this.ctx.closePath();
+    }
+
+    endingRadius = this.ballRadius + 7;
+    startingRadius = this.ballRadius;
+
+    while(endingRadius < startingRadius) {
+      this.ctx.beginPath();
+      this.ctx.arc(this.x, this.y, endingRadius, 0, Math.PI*2);
+      endingRadius -= animationSpeed;
+      this.ctx.fillStyle = this.getTransparentColor(this.color);
       this.ctx.fill();
       this.ctx.closePath();
-    }
-    
+    } 
   }
 
   updateDot() {

@@ -10,7 +10,7 @@ class Grid {
     this.rows = rows;
     this.isLocked = false;
     this.makeGrid(rows);
-    this.interval = setInterval(this.render.bind(this), 50);
+    this.interval = setInterval(this.render.bind(this), 33);
     this.interval;
   }
 

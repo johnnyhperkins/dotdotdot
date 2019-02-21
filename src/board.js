@@ -42,8 +42,9 @@ class Board {
     const colorId = this.grid.getDot(pos).colorId;
 
     this.legalMoves = positions.filter(pos => {
-      if(this.selectedDots.length > 3 && 
-        this.selectedDots[0].id === _.last(this.selectedDots).id) {
+      if( this.selectedDots.length > 3 && 
+          this.selectedDots[0].id === _.last(this.selectedDots).id
+        ) {
         this.isSquare = true;
         return true;
       } 
