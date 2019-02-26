@@ -14,6 +14,7 @@ class Board {
     this.selectedDots = [];
     this.legalMoves = [];
     this.currentDot = null;
+    this.prevDot = null;
     this.isDown = false;
     this.isSquare = false;
     this.game = game;
@@ -25,7 +26,7 @@ class Board {
 
   createNewGrid() {
     this.grid.clearGridInterval();
-    this.grid.clearCanvas();
+    this.grid.clearCanvas(this.ctx);
     this.grid = new Grid(6, 40, 10, this.canvas, this.ctx);
     this.dotGrid = this.grid.grid;
   }
@@ -41,30 +42,13 @@ class Board {
     ]
     const colorId = this.grid.getDot(pos).colorId;
 
-    this.legalMoves = positions.filter(pos => {
-      if( this.selectedDots.length > 3 && 
-          this.selectedDots[0].id === _.last(this.selectedDots).id 
-        ) {
-        this.isSquare = true;
-        return true;
-      } 
-      else {
+    if(this.isSquare) {
+      this.legalMoves = [this.prevDot];
+    } else {
+      this.legalMoves = positions.filter(pos => {
         return this.grid.getDot(pos) && 
-        this.grid.getDot(pos).colorId === colorId
-      }
-    }).map(pos => this.grid.getDot(pos));
-      
-    this.legalMoves.forEach(dot => console.log("x", dot.x, "y", dot.y ))
-  }
-
-  getLegalMovesById(id) {
-    // TO DO: figure out how to use the dots col and row properties
-    for (let i = 0; i < this.dotGrid.length; i++) {
-      for (let j = 0; j < this.dotGrid[i].length; j++) {
-        if(this.dotGrid[i][j].id == id) {
-          return this.updateLegalMoves([i,j]);
-        } 
-      }
+          this.grid.getDot(pos).colorId === colorId
+      }).map(pos => this.grid.getDot(pos));
     }
   }
 
@@ -87,8 +71,7 @@ class Board {
         if(!this.currentDot) {
           dot.animateHighlight();
           this.selectedDots.push(dot);
-          // this.updateLegalMoves([dot.row,dot.col]);
-          this.getLegalMovesById(dot.id);
+          this.updateLegalMoves([dot.col,dot.row]);
           this.currentDot = dot;
         } 
       }
@@ -113,13 +96,13 @@ class Board {
     this.legalMoves.forEach(dot => {
       if( mouseY > dot.py && mouseY < dot.py + dot.height && 
           mouseX > dot.px && mouseX < dot.px + dot.width ) {
+
         const numDots = this.selectedDots.length;
-        if((
-            this.selectedDots[0].id == dot.id && 
-            numDots !== 2 ) || 
-           (numDots > 3 && 
-            this.selectedDots.includes(dot) &&
-          _.last(this.selectedDots).id !== dot.id )
+
+        if( numDots > 3 && 
+            dot.id !== this.prevDot.id &&
+            this.selectedDots.includes(dot) && 
+            !this.isSquare
           ) {
           this.isSquare = true;
           this.selectedDots.push(dot);
@@ -128,12 +111,17 @@ class Board {
           this.isSquare = false;
         } else {
           this.selectedDots.pop();
+          this.prevDot = this.selectedDots.length > 1 ? this.selectedDots[this.selectedDots.length - 2] : null;
+          this.currentDot = dot;
+          dot.animateHighlight();
           this.isSquare = false;
-        } 
-        dot.animateHighlight()
-        this.currentDot = dot;
+          return this.updateLegalMoves([dot.col, dot.row]);
+        }
 
-        this.getLegalMovesById(dot.id)
+        this.prevDot = this.currentDot;
+        this.currentDot = dot;
+        dot.animateHighlight()
+        this.updateLegalMoves([dot.col, dot.row]);
       } 
     })
   }
@@ -150,7 +138,7 @@ class Board {
     this.currentDot = null;
     this.selectedDots = [];
     this.isSquare = false;
-    this.clearTempCanvas();
+    this.clearCanvas(this.tempCtx);
   }
 
   handleSquare() {
@@ -169,12 +157,8 @@ class Board {
     this.grid.removeDeletedDots();
   }
 
-  clearCanvas() {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-  }
-
-  clearTempCanvas() {
-    this.tempCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  clearCanvas(ctx) {
+    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
   drawConnection(start, end) {
@@ -187,7 +171,7 @@ class Board {
   }
 
   drawMouseLine(start, end) {
-    this.clearTempCanvas();
+    this.clearCanvas(this.tempCtx);
     if(this.selectedDots.length > 1) {
       const dots = this.selectedDots;
       for (let i = 0; i < dots.length -1; i++) {
