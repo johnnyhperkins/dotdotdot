@@ -113,7 +113,7 @@ class Grid {
 
   makeRow(x, y, numDots) {
     const dotRow = []
-    while (numDots > 0 ) {
+    while (numDots > 0) {
       dotRow.push(new Dot(x, y, this.ctx))
       y += this.padding;
       numDots--;

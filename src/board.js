@@ -61,7 +61,6 @@ class Board {
   }
 
   handleMouseDown(e) {
-    e.preventDefault();
     const mouseX = e.pageX - this.canvasX,
           mouseY = e.pageY - this.canvasY;
 
@@ -91,7 +90,6 @@ class Board {
   }
 
   handleMouseMove(e) {
-    e.preventDefault();
     if(!this.isDown && this.selectedDots.length == 0) return;
     
     const mouseX = e.pageX - this.canvasX,
@@ -116,9 +114,11 @@ class Board {
           ) {
           this.isSquare = true;
           this.selectedDots.push(dot);
+
         } else if(!this.selectedDots.includes(dot)) {
           this.selectedDots.push(dot);
           this.isSquare = false;
+          
         } else {
           this.selectedDots.pop();
           this.prevDot = this.selectedDots.length > 1 ? this.selectedDots[this.selectedDots.length - 2] : null;
@@ -139,8 +139,7 @@ class Board {
     })
   }
 
-  handleMouseUp(e) {
-    e.preventDefault();
+  handleMouseUp() {
     if(!this.isDown) return;
 
     if(this.selectedDots.length > 1) {
@@ -163,12 +162,12 @@ class Board {
   handleRemoveDots() {
     this.isSquare && this.handleSquare();
     (this.soundOn && !this.isSquare) && this.popDots.play();
+
     this.selectedDots.forEach(dot => {
       this.grid.getDot([dot.col, dot.row]).deleted = true;
     })
 
     this.game.updateScore(this.selectedDots.length,this.currentDot.colorId);
-    
     this.grid.removeDeletedDots();
   }
 
@@ -196,6 +195,7 @@ class Board {
         )
       }
     }
+
     this.tempCtx.beginPath();
     this.tempCtx.moveTo(start.x, start.y);
     this.tempCtx.lineTo(end.x, end.y);

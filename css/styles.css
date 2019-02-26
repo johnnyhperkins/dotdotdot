@@ -98,8 +98,14 @@ h2 {
   font-size: 22px;
 }
 
+h3 {
+  font-size: 20px;
+  font-family: 'Gochi Hand', Arial, sans-serif;
+  margin-bottom: 10px;
+}
+
 h5 {
-  font-size: 10px;
+  font-size: 9px;
   text-transform: uppercase;
   font-weight: bold;
   margin: 0;
@@ -225,12 +231,12 @@ aside {
 	text-transform: uppercase;
 	transition:.1s ease-in-out all;
 	cursor:pointer;
+	margin-top: 7px;
 }
 
 .win-loss-wrapper button:hover {
 	background-color: rgb(64, 165, 81);
 }
-
 
 .scoreboard-wrapper .target-color {
   width: 20px;
@@ -251,6 +257,32 @@ aside {
 
 .sound-controls {
 	position: absolute;
-	top: 45%;
-	left: 28%;
+	top: 23%;
+	left: 33%;
+}
+
+.restart-game {
+  margin-top: 7px;
+}
+
+.high-scores-wrapper {
+  position: absolute;
+  top: 23%;
+  right: 20%;
+  padding: 30px 45px;
+  border: 1px solid #ebebeb;
+  box-shadow: 0px 8px 8px -5px rgba(0,0,0,0.1);
+}
+
+.high-scores-wrapper ol {
+  list-style: decimal;
+  padding-left: 15px;
+}
+
+.high-scores-wrapper ol li:first-child {
+	font-weight:bold;
+}
+
+.high-scores-wrapper ol li {
+	padding: 5px 0;
 }

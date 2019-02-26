@@ -21,6 +21,8 @@ class Game {
 
     this.level = 1;
     this.score = {};
+
+    this.username = 'Anonymous';
     
     this.dotsToPop;
     this.dotsPopped;
@@ -37,32 +39,50 @@ class Game {
     );
 
     this.setLocalStorageScore = this.setLocalStorageScore.bind(this);
+    this.restartGame = this.restartGame.bind(this);
 
     Object.keys(LEVELS).forEach(level => this.score[level] = 0);
   }
 
-  setLocalStorageScore() {
-    // debugger;
-    const name = $('#name').val();
-    const scores = window.localStorage
-    // const prevScores = scores.getItem('dotHighScores') ? scores.getItem('dotHighScores') : scores.setItem('dotHighScores', {});
-    const totalScore = this.getTotalScore();
-    let updatedScores;
-    if(name) {
-      updatedScores = JSON.stringify({
-        // ...prevScores,
-        [`${name}`]: totalScore
-      });
+  hasPlayed(name) {
+    const scores = window.localStorage.getItem('dotHighScores');
+    if( scores ) {
+      return JSON.parse(scores).filter(record => record.name == name)
     } else {
-      updatedScores = JSON.stringify({
-        // ...prevScores,
-        Anonymous: totalScore
-      })
+      return false;  
+    }
+  }
+
+  setLocalStorageScore() {
+    this.username = $('#name').val();
+    let storage = window.localStorage;
+    const hasPlayed = this.hasPlayed(this.username)
+    
+    if(hasPlayed.length) {
+      if(hasPlayed[0].name == this.username && hasPlayed[0].score < this.getTotalScore()) {
+        const updatedPlayers = JSON.parse(storage.getItem('dotHighScores')).map(record => {
+          if(record.name == this.username) {
+            record.score = this.getTotalScore();
+            return record
+          } else {
+            return record
+          }
+        });
+        storage.setItem('dotHighScores', JSON.stringify(updatedPlayers))
+      } 
+    } else {
+      const newRecord = {name: this.username, score:this.getTotalScore()}
+
+      if(storage.getItem('dotHighScores')) {
+        let dotScores = JSON.parse(storage.getItem('dotHighScores'));
+        dotScores.push(newRecord);
+        storage.setItem('dotHighScores', JSON.stringify(dotScores));  
+      } else {
+        storage.setItem('dotHighScores', JSON.stringify([newRecord]));
+      }
     }
 
-//     debugger;
-
-    scores.setItem('dotHighScores', updatedScores);
+    this.renderHighScores()
   }
 
   updateLevel() {
@@ -106,15 +126,12 @@ class Game {
   gameWon() {
     if(this.allDotsPopped()) {
       this.board.grid.lockDots();
+      this.score[this.level] += (this.movesRemaining * 100);
       if(this.level == _.last(Object.keys(LEVELS))) {
-        this.winLossWrapper.empty().append('<p>You won the game!</p>')
-        this.winLossWrapper.append($('<input id="name" placeholder="Enter your name" type="text" class="text-input" value="" />'))
-        this.winLossWrapper.append($('<button class="high-score">Save</button>'));
-        this.winLossWrapper.append($('<button class="restart-game">Restart Game</button>'));
+        this.winLossWrapper.empty().append($('<p>You won the game!</p><input id="name" placeholder="Enter your name" type="text" class="text-input" value="" /><button class="high-score-btn">Save</button><button class="restart-game">Restart Game</button>'));
         
-
-        $('.high-score').on('click', () => this.setLocalStorageScore());  
-        $('.restart-game').on('click', () => this.restartGame.bind(this));
+        $('.high-score-btn').on('click', () => this.setLocalStorageScore());  
+        $('.restart-game').on('click', () => this.restartGame());
       } else {
         this.winLossWrapper.append(
           $('<p>You did it!</p><button class="next-level">Next Level</button>')
@@ -155,7 +172,7 @@ class Game {
     this.renderScoreboard();
   }
 
-  createScoreBoard() {
+  createScoreboard() {
     this.levelEl.text(this.level);
     this.scoreboardWrapper.empty();
     this.dotColorsToPop.forEach(color => {
@@ -181,13 +198,36 @@ class Game {
     })
   }
 
+  renderHighScores() {
+    const highScoreContainer = $('.high-scores');
+    let scores = $('<ol></ol>');
+    const storageArr = JSON.parse(window.localStorage.getItem('dotHighScores'));
+    let highScores = _.orderBy(storageArr, ['score'], ['desc']);
+    highScores = highScores.length > 10 ? highScores.slice(0,10) : highScores;
+
+    highScoreContainer.empty();
+
+    if(highScores.length) {
+      highScores.forEach(record => {
+        scores.append($(`<li>${record.name} ${record.score}</li>`))
+      })
+    } else {
+      scores.append('<li>No high scores yet!</li>');
+    }
+
+    highScoreContainer.append(scores);
+    $('#name').fadeOut();
+    $('.high-score-btn').fadeOut();
+  }
+
   startGame(level = 1) {
     this.level = level || this.level;
     this.winLossWrapper.empty();
     this.updateLevel();
-    this.createScoreBoard();
+    this.createScoreboard();
     this.renderScoreboard();
     this.renderScore(); 
+    this.renderHighScores();
     this.board.grid.render();
   }
 }

@@ -21,7 +21,7 @@ export const LEVELS = {
     dotColorsToPopIds: [0,1],
   }, 
   3: {
-    dotsToPop: 15,
+    dotsToPop: 20,
     dotsPopped: {
       0: 0,
       1: 0,
@@ -32,7 +32,7 @@ export const LEVELS = {
     dotColorsToPopIds: [0,1,2],
   }, 
   4: {
-    dotsToPop: 10,
+    dotsToPop: 25,
     dotsPopped: {
       0: 0,
       1: 0,
@@ -44,7 +44,7 @@ export const LEVELS = {
     dotColorsToPopIds: [0,1,2,3],
   }, 
   5: {
-    dotsToPop: 1,
+    dotsToPop: 45,
     dotsPopped: {
       0: 0,
       1: 0,
