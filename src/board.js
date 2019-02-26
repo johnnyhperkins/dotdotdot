@@ -1,8 +1,6 @@
 import _ from 'lodash';
 import Grid from './grid';
 import Sound from './sound';
-// const select = require('../sounds/select_dot.wav');
-// const box = require('../sounds/make_square.wav');
 
 class Board {
   constructor(canvas, tempCanvas, ctx, tempContext, game) {
@@ -22,7 +20,8 @@ class Board {
     this.game = game;
     this.makeSquare = new Sound('./sounds/make_square.mp3');
     this.selectDot = new Sound('./sounds/select_dot.mp3');
-    this.popDots = new Sound('./sounds/pop_dots.mp3')
+    this.popDots = new Sound('./sounds/pop_dots.mp3');
+    this.soundOn = false;
     
     // args: numRows, paddingBetweenDots, startingXYPosition
     this.grid = new Grid(6, 40, 10, canvas, ctx);
@@ -34,6 +33,10 @@ class Board {
     this.grid.clearCanvas(this.ctx);
     this.grid = new Grid(6, 40, 10, this.canvas, this.ctx);
     this.dotGrid = this.grid.grid;
+  }
+
+  toggleSound() {
+    this.soundOn = !this.soundOn;
   }
 
   updateLegalMoves(pos) {
@@ -74,9 +77,10 @@ class Board {
         this.tempCtx.clearRect(0,0,this.tempCanvas.width,this.tempCanvas.height);
 
         if(!this.currentDot) {
-          dot.animateHighlight();
+          this.soundOn && this.selectDot.play();
           this.selectedDots.push(dot);
-          this.selectDot.play();
+          
+          dot.animateHighlight();        
           this.updateLegalMoves([dot.col,dot.row]);
           this.currentDot = dot;
         } 
@@ -121,11 +125,12 @@ class Board {
           this.currentDot = dot;
           dot.animateHighlight();
           this.isSquare = false;
-          this.selectDot.play();
+
+          this.soundOn && this.selectDot.play();
           return this.updateLegalMoves([dot.col, dot.row]);
         }
 
-        this.selectDot.play();
+        this.soundOn && this.selectDot.play();
         this.prevDot = this.currentDot;
         this.currentDot = dot;
         dot.animateHighlight()
@@ -152,12 +157,12 @@ class Board {
   handleSquare() {
     let colorId = this.currentDot.colorId;
     this.selectedDots = this.dotGrid.flat().filter(dot => dot.colorId === colorId)
-    this.makeSquare.play();
+    this.soundOn && this.makeSquare.play();
   }
 
   handleRemoveDots() {
     this.isSquare && this.handleSquare();
-    !this.isSquare && this.popDots.play();
+    (this.soundOn && !this.isSquare) && this.popDots.play();
     this.selectedDots.forEach(dot => {
       this.grid.getDot([dot.col, dot.row]).deleted = true;
     })

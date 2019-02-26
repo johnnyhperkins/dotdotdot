@@ -225,3 +225,19 @@ aside {
   display:inline-block;
   border-radius: 50%;
 }
+
+.fa-volume-off,
+.fa-volume-up {
+	font-size: 50px;
+	color: #ccc;
+}
+
+.fa-volume-up {
+	color: #555;
+}
+
+.sound-controls {
+	position: absolute;
+	top: 45%;
+	left: 28%;
+}
