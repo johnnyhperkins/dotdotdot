@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/johnnyhperkins/dotdotdot#readme",
   "devDependencies": {
+    "file-loader": "^3.0.1",
     "webpack": "^4.29.2",
     "webpack-cli": "^3.2.3"
   },

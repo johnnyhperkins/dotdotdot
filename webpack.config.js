@@ -18,6 +18,11 @@ module.exports = () => {
             presets: ['@babel/env']
           }
         },
+        {
+          test: /\.mp3$/,
+          // include: /sounds/,
+          loader: 'file-loader'
+        }
       ]
     },
     resolve: {
