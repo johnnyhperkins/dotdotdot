@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     game.board.toggleSound();
   })
   
-  game.startGame();
+  game.startGame(5);
   
 })
 

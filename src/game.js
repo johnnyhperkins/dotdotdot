@@ -35,24 +35,34 @@ class Game {
       this.tempCtx,
       this
     );
-    
+
+    this.setLocalStorageScore = this.setLocalStorageScore.bind(this);
+
     Object.keys(LEVELS).forEach(level => this.score[level] = 0);
   }
 
-  setLocalStorageScore(name) {
+  setLocalStorageScore() {
+    // debugger;
+    const name = $('#name').val();
     const scores = window.localStorage
-    const prevScores = scores.getItem('dotHighScores') ? scores.getItem('dotHighScores') : scores.setItem('dotHighScores', {});
+    // const prevScores = scores.getItem('dotHighScores') ? scores.getItem('dotHighScores') : scores.setItem('dotHighScores', {});
+    const totalScore = this.getTotalScore();
+    let updatedScores;
     if(name) {
-      scores.setItem('dotHighScores', {
-        ...prevScores,
-        [`${name}`]: this.totalScore
+      updatedScores = JSON.stringify({
+        // ...prevScores,
+        [`${name}`]: totalScore
       });
     } else {
-      scores.setItem('dotHighScores', {
-        ...prevScores,
-        Anonymous: this.totalScore
+      updatedScores = JSON.stringify({
+        // ...prevScores,
+        Anonymous: totalScore
       })
     }
+
+//     debugger;
+
+    scores.setItem('dotHighScores', updatedScores);
   }
 
   updateLevel() {
@@ -66,18 +76,8 @@ class Game {
 
   nextLevel() {
     this.level += 1;
-    if(this.level < 6) {
-      this.board.createNewGrid();
-      this.startGame(this.level);
-    } else {
-      this.winLossWrapper.empty().append('<p>You won the game!</p>')
-      this.winLossWrapper.append($('<input id="name" placeholder="Enter your name" type="text" class="text-input" value="" />'))
-      this.winLossWrapper.append($('<button class="restart-game">Reset Game</button>'));
-      
-      // this.setLocalStorageScore($('#name').val())
-        
-      $('.restart-game').on('click', () => this.restartGame.bind(this));
-    }
+    this.board.createNewGrid();
+    this.startGame(this.level);
   }
 
   getTotalScore() {
@@ -106,10 +106,22 @@ class Game {
   gameWon() {
     if(this.allDotsPopped()) {
       this.board.grid.lockDots();
-      this.winLossWrapper.append(
-        $('<p>You did it!</p><button class="next-level">Next Level</button>')
-      );
-      $('.next-level').on('click', this.nextLevel.bind(this));
+      if(this.level == _.last(Object.keys(LEVELS))) {
+        this.winLossWrapper.empty().append('<p>You won the game!</p>')
+        this.winLossWrapper.append($('<input id="name" placeholder="Enter your name" type="text" class="text-input" value="" />'))
+        this.winLossWrapper.append($('<button class="high-score">Save</button>'));
+        this.winLossWrapper.append($('<button class="restart-game">Restart Game</button>'));
+        
+
+        $('.high-score').on('click', () => this.setLocalStorageScore());  
+        $('.restart-game').on('click', () => this.restartGame.bind(this));
+      } else {
+        this.winLossWrapper.append(
+          $('<p>You did it!</p><button class="next-level">Next Level</button>')
+        );
+        $('.next-level').on('click', this.nextLevel.bind(this));
+      }
+      
 
     } else if(this.movesRemaining == 0) {
       this.score[this.level] = 0;
