@@ -1,4 +1,4 @@
-# Dot Dot Dot
+# Dot Dot .
 
 ### [Dot Dot . live](http://dotdotdots.xyz/)
 
