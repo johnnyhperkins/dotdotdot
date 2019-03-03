@@ -1,4 +1,7 @@
 # Dot Dot Dot
+
+### [Dot Dot . live](http://dotdotdots.xyz/)
+
 ## Background and Overview
 * DDD will be a variation of the game Two Dots, where players have to connect a certain number of like-colored dots in a set number of moves. When the dots are connected they disappear and random new dots drop from the top of the canvas. If the player connects dots in the shape of a box, all like-colored dots disappear from the board. 
 ## Functionality and MVP Features
