@@ -95,7 +95,6 @@ class Board {
     const mouseX = e.pageX - this.canvasX,
           mouseY = e.pageY - this.canvasY;
 
-    // starts drawing a line from the center of closest dot to click:
     this.currentDot && this.drawMouseLine(
       {x: this.currentDot.x, y: this.currentDot.y}, 
       {x: mouseX, y: mouseY}
@@ -121,7 +120,9 @@ class Board {
           
         } else {
           this.selectedDots.pop();
-          this.prevDot = this.selectedDots.length > 1 ? this.selectedDots[this.selectedDots.length - 2] : null;
+          this.prevDot = this.selectedDots.length > 1 ? 
+            this.selectedDots[this.selectedDots.length - 2] : null;
+
           this.currentDot = dot;
           dot.animateHighlight();
           this.isSquare = false;
