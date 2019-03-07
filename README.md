@@ -223,3 +223,51 @@ removeDeletedDots() {
   this.addDots();
 }
 ```
+Once the dots to be removed are gone from the array, and their former x/y positions used to determine animation start/end points for the remaining dots, the process of adding new dots beings: 
+
+```js
+addDots() {
+  let addedDots = false;
+
+  while(!addedDots) {
+    addedDots = true;
+    for (let i = 0; i < this.grid.length; i++) {
+      let col = this.grid[i];
+      
+      if(col.length < 6) {
+        addedDots = false;
+        let numDotsToAdd = this.rows - col.length;
+        let counter = 0;
+        let bottomDotX, bottomDotY;
+
+        //check if the whole column was wiped out:
+        if(col[0]) {
+          bottomDotX = col[0].x;
+          bottomDotY = col[0].y;
+        } else {
+          bottomDotX = (i * this.padding) + this.startingXYPosition;
+          bottomDotY = this.canvas.height + this.padding - this.startingXYPosition;
+        }
+        
+        while( counter < numDotsToAdd) {
+          bottomDotY -= this.padding
+          this.grid[i].unshift( 
+            new Dot(
+              bottomDotX, 
+              bottomDotY, 
+              this.ctx, 
+              true,
+              ((counter + 1) * -this.padding)
+            )
+          )
+
+          counter++;
+        }
+      }
+    }
+  }  
+  this.render();
+}
+```
+
+`this.render` sets in motion the animation of the surviving dots and the new dots, and the grid is repopulated for the next move.
