@@ -20,7 +20,8 @@ handleMouseDown(e) {
 
   this.currentDot = this.selectedDots.length ? this.selectedDots[0] : null;
 
-  // Dots are stored in a 2D array, which is flattened and iterated over to check if the mouse's coordinates are over within a given dot's px and py (centerpoints) + the dot's height and width.
+  // Dots are stored in a 2D array, which is flattened and iterated over to check if the mouse's 
+  // coordinates are over within a given dot's px and py (centerpoints) + the dot's height and width.
   this.dotGrid.flat().forEach(dot => {
     if( !this.grid.isLocked &&
         mouseY > dot.py && 
@@ -70,7 +71,9 @@ updateLegalMoves(pos) {
       // getDot returns false if the provided 'pos' is outside the grid
       return this.grid.getDot(pos) && 
         this.grid.getDot(pos).colorId === colorId
-    // after filtering the possible positions, put the instances of dots that can be legally moused over into an array and use their x/y coordinately to determine where the mouse can legally be moved next
+    // after filtering the possible positions, put the instances of dots 
+    // that can be legally moused over into an array and use their x/y 
+    // coordinately to determine where the mouse can legally be moved next
     }).map(pos => this.grid.getDot(pos));
   }
 }
@@ -193,7 +196,8 @@ removeDeletedDots() {
         // look for deleted dots...
         if(currentDot.deleted) {
           finished = false;
-          // ... find the dot immediately 'above' the deleted dot (again, getDot returns false if the position doesn't exist in the grid).
+          // ... find the dot immediately 'above' the deleted dot (again, 
+          // getDot returns false if the position doesn't exist in the grid).
           const prevDot = this.getDot([i,j-1])
           let updatedY = currentDot.y;
           
@@ -204,7 +208,8 @@ removeDeletedDots() {
             prevDot.y = updatedY;
             prevDot.animated = true;
             prevDot.animatedYStart = updatedY;
-            // ... deleted dot changes positions in the array (moving it towars the front). Once it's at the front of the array ...
+            // ... deleted dot changes positions in the array (moving it towars the front). 
+            // Once it's at the front of the array ...
             [this.grid[i][j], this.grid[i][j-1]] = [this.grid[i][j-1], this.grid[i][j]]
           } else {
             // ... it gets filtered out of the array altogether
