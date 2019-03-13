@@ -223,4 +223,4 @@ updateRow(arr) {
 }
 ```
 
-Finally, I call `this.render` in the `removeDeletedDots` sets in motion the animation of the surviving dots and the new dots, and the grid is repopulated for the next move.
+Finally, I call `this.render` in the `removeDeletedDots` function which sets in motion the animation of the surviving dots and the new dots, and the grid is re-drawn for the next move.
