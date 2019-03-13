@@ -3,13 +3,13 @@ import uuid from 'uuid';
 import { COLORS } from './constants/colors';
 
 class Dot {
-  constructor(x, y, ctx, animated = false, animatedYStart = -10, padding = 40) {
+  constructor(x, y, ctx, animated = false, animateYStart = -10, padding = 40) {
     this.deleted = false;
     this.animated = animated;
     this.x = x;
     this.y = y;
     this.padding = padding;
-    this.animateYStart = animatedYStart;
+    this.animateYStart = animateYStart;
     this.ballRadius = 10;
     this.px = this.x - this.ballRadius;
     this.py = this.y - this.ballRadius;

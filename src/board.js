@@ -26,6 +26,7 @@ class Board {
     // args: numRows, paddingBetweenDots, startingXYPosition
     this.grid = new Grid(6, 40, 10, canvas, ctx);
     this.dotGrid = this.grid.grid;
+    console.log(this.dotGrid);
   }
 
   createNewGrid() {
@@ -169,7 +170,7 @@ class Board {
     })
 
     this.game.updateScore(this.selectedDots.length,this.currentDot.colorId);
-    this.grid.removeDeletedDots();
+    this.grid.removeDeletedDots(this.selectedDots);
   }
 
   clearCanvas(ctx) {

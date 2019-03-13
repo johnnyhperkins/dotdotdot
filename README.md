@@ -161,9 +161,9 @@ handleMouseMove(e) {
   })
 }
 ```
-As the mouse moves from dot to dot, an array of selected dots grows, and when the mouse is lifted up the process of elimating the selected dots begins. Finding and removing the dots from the dot grid array is easy, getting them to fall *down* was a challenge. 
+As the mouse moves from dot to dot, an array of selected dots grows, and when the mouse is lifted up the process of elimating the selected dots begins. Finding and removing the dots from the dot grid array is easy, getting them to fall *down* was a challenge. The simple solution was to swap the x and y coordinates of the dots while building the grid. So the first row in the grid would be [{x: 10, y: 10}, {x: 10, y: 50}, {x: 10, y: 90} ...etc ]. As a result, the arrays in the dot grid array are drawn as columns on canvas. 
 
-I couldn't simply delete them and replace them with new intances of the dot class, so the first step was to mark them all for deletion: 
+But I couldn't simply delete them and replace them with new intances of the dot class, so the first step was to mark them all for deletion: 
 
 ```js
 handleRemoveDots() {
@@ -178,96 +178,49 @@ handleRemoveDots() {
   this.grid.removeDeletedDots();
 }
 ```
-Once the deleted dots are marked, the grid is iterated over in a bubble sort style search, updating the dot's coordinates and setting an animation flag so that when the final step of actually removing the dots happens, they appear to fall. This iteration happens until all the deleted dots have been found and the dots 'above' them have had their coordinates updated: 
 
-(Note: I put 'above' in quotes because dots that appear to be above other dots are actually just one index behind in the 2d dot grid array. I did this by swapping the x and y coordinates while building the grid. So the first row in the grid would be [{x: 10, y: 10}, {x: 10, y: 50}, {x: 10, y: 90} ...etc ]. As a result, the arrays in the dot grid are drawn as columns on canvas, and array[i - 1] and array[i + 1] appear immediately above and below rather than to the left and right) 
+Once the deleted dots are marked, I find which rows they're in, filter the deleted dots, add new dots with starting coordinates outside the canvas frame and update the row:
 
 ```js
-removeDeletedDots() {
-  let finished = false;
+updateRow(arr) {
+  const xVal = arr[0].x;
+  let updatedArr = arr.filter(dot => !dot.deleted);
+  let numDotsToAdd = this.rows - updatedArr.length;
+  let j = numDotsToAdd;
   
-  while(!finished) {
-    finished = true;
-    for (let i = 0; i < this.grid.length; i++) {
-      for (let j = 0; j < this.grid[i].length; j++) {
-        
-        const currentDot = this.getDot([i,j]);
-        
-        // look for deleted dots...
-        if(currentDot.deleted) {
-          finished = false;
-          // ... find the dot immediately 'above' the deleted dot (again, 
-          // getDot returns false if the position doesn't exist in the grid).
-          const prevDot = this.getDot([i,j-1])
-          let updatedY = currentDot.y;
-          
-          // If the deleted dot is not the first element in the array...
-          if(j > 0) {
-            // .. the dot's x/y coordinates are swapped with the dot immediately before it and... 
-            currentDot.y = prevDot.y;
-            prevDot.y = updatedY;
-            prevDot.animated = true;
-            prevDot.animatedYStart = updatedY;
-            // ... deleted dot changes positions in the array (moving it towars the front). 
-            // Once it's at the front of the array ...
-            [this.grid[i][j], this.grid[i][j-1]] = [this.grid[i][j-1], this.grid[i][j]]
-          } else {
-            // ... it gets filtered out of the array altogether
-            this.grid[i] = this.grid[i].filter(dot => currentDot.id !== dot.id)
-          }
-        } 
-      }
-    }
+  for (let i = 0; i < numDotsToAdd; i++) {
+    let newDot = new Dot(
+      // x coord
+      xVal, 
+      // y coord
+      ((j - 1) * this.padding) + this.startingXYPosition, 
+      // context
+      this.ctx, 
+      // is animated is set to true
+      true,
+      // it's starting y coordinate is set in an inverse
+      // relationship to its final y coordinate since the 
+      // new dots pushed into the array are stacked out of 
+      // frame to fall in the right order
+      (i * -this.padding) - this.startingXYPosition
+    )
+
+    j--;
+    updatedArr.unshift(newDot);
   }
 
-  this.addDots();
-}
-```
-Once the dots to be removed are gone from the array, and their former x/y positions used to determine animation start/end points for the remaining dots, the process of adding new dots beings: 
+  if(numDotsToAdd == 6) return updatedArr;
 
-```js
-addDots() {
-  let addedDots = false;
-
-  while(!addedDots) {
-    addedDots = true;
-    for (let i = 0; i < this.grid.length; i++) {
-      let col = this.grid[i];
-      
-      if(col.length < 6) {
-        addedDots = false;
-        let numDotsToAdd = this.rows - col.length;
-        let counter = 0;
-        let bottomDotX, bottomDotY;
-
-        //check if the whole column was wiped out:
-        if(col[0]) {
-          bottomDotX = col[0].x;
-          bottomDotY = col[0].y;
-        } else {
-          bottomDotX = (i * this.padding) + this.startingXYPosition;
-          bottomDotY = this.canvas.height + this.padding - this.startingXYPosition;
-        }
-        
-        while( counter < numDotsToAdd) {
-          bottomDotY -= this.padding
-          this.grid[i].unshift( 
-            new Dot(
-              bottomDotX, 
-              bottomDotY, 
-              this.ctx, 
-              true,
-              ((counter + 1) * -this.padding)
-            )
-          )
-
-          counter++;
-        }
-      }
+  return updatedArr.map((dot, idx) => {
+    if(!dot.animated) {
+      dot.animated = true;
+      dot.animateYStart = dot.y;
+      dot.y = (idx * this.padding) + this.startingXYPosition; 
     }
-  }  
-  this.render();
+    
+    return dot
+  })
 }
 ```
 
-`this.render` sets in motion the animation of the surviving dots and the new dots, and the grid is repopulated for the next move.
+Finally, I call `this.render` in the `removeDeletedDots` sets in motion the animation of the surviving dots and the new dots, and the grid is repopulated for the next move.

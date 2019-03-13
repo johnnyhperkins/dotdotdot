@@ -34,80 +34,56 @@ class Grid {
   lockDots() {
     this.isLocked = true;
   }
-
-  removeDeletedDots() {
-    let finished = false;
+  
+  updateRow(arr) {
+    const xVal = arr[0].x;
+    let updatedArr = arr.filter(dot => !dot.deleted);
+    let numDotsToAdd = this.rows - updatedArr.length;
+    let j = numDotsToAdd;
     
-    while(!finished) {
-      finished = true;
-      for (let i = 0; i < this.grid.length; i++) {
-        for (let j = 0; j < this.grid[i].length; j++) {
-          
-          const currentDot = this.getDot([i,j]);
-          if(currentDot.deleted) {
-            finished = false;
-            const prevDot = this.getDot([i,j-1])
-            let updatedY = currentDot.y;
-            
-            //if not the first element in the array...
-            if(j > 0) {
-              currentDot.y = prevDot.y;
-              prevDot.y = updatedY;
-              prevDot.animated = true;
-              prevDot.animatedYStart = updatedY;
+    for (let i = 0; i < numDotsToAdd; i++) {
+      let newDot = new Dot(
+        xVal, 
+        ((j - 1) * this.padding) + this.startingXYPosition, 
+        this.ctx, 
+        true,
+        (i * -this.padding) - this.startingXYPosition
+      )
 
-              [this.grid[i][j], this.grid[i][j-1]] = [this.grid[i][j-1], this.grid[i][j]]
-            } else {
-              this.grid[i] = this.grid[i].filter(dot => currentDot.id !== dot.id)
-            }
-          } 
-        }
+      j--;
+      updatedArr.unshift(newDot);
+    }
+
+    if(numDotsToAdd == 6) return updatedArr;
+
+    return updatedArr.map((dot, idx) => {
+      if(!dot.animated) {
+        dot.animated = true;
+        dot.animateYStart = dot.y;
+        dot.y = (idx * this.padding) + this.startingXYPosition; 
+      }
+      
+      return dot
+    })
+  }
+
+  removeDeletedDots(deletedDots) {
+    const rowsToUpdate = {}
+    const rows = {};
+    
+    deletedDots.forEach(dot => rowsToUpdate[dot.col] = true)
+  
+    Object.keys(rowsToUpdate).forEach(row => {
+      rows[row] = this.grid[row];
+    })
+
+    for (let key in cols) {
+      if(rows.hasOwnProperty(key)) {
+        const updatedRow = this.updateRow(rows[key]);
+        this.grid[key] = updatedRow;
       }
     }
 
-    this.addDots();
-  }
-
-  addDots() {
-    let addedDots = false;
-
-    while(!addedDots) {
-      addedDots = true;
-      for (let i = 0; i < this.grid.length; i++) {
-        let col = this.grid[i];
-        
-        if(col.length < 6) {
-          addedDots = false;
-          let numDotsToAdd = this.rows - col.length;
-          let counter = 0;
-          let bottomDotX, bottomDotY;
-
-          //check if the whole column was wiped out:
-          if(col[0]) {
-            bottomDotX = col[0].x;
-            bottomDotY = col[0].y;
-          } else {
-            bottomDotX = (i * this.padding) + this.startingXYPosition;
-            bottomDotY = this.canvas.height + this.padding - this.startingXYPosition;
-          }
-          
-          while( counter < numDotsToAdd) {
-            bottomDotY -= this.padding
-            this.grid[i].unshift( 
-              new Dot(
-                bottomDotX, 
-                bottomDotY, 
-                this.ctx, 
-                true,
-                ((counter + 1) * -this.padding)
-              )
-            )
-
-            counter++;
-          }
-        }
-      }
-    }  
     this.render();
   }
 
