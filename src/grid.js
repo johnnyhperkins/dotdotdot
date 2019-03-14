@@ -77,7 +77,7 @@ class Grid {
       rows[row] = this.grid[row];
     })
 
-    for (let key in cols) {
+    for (let key in rows) {
       if(rows.hasOwnProperty(key)) {
         const updatedRow = this.updateRow(rows[key]);
         this.grid[key] = updatedRow;
