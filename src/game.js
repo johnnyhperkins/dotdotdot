@@ -199,8 +199,8 @@ class Game {
   }
 
   renderHighScores() {
+    let scores;
     const highScoreContainer = $('.high-scores');
-    let scores = $('<ol></ol>');
     const storageArr = JSON.parse(window.localStorage.getItem('dotHighScores'));
     let highScores = _.orderBy(storageArr, ['score'], ['desc']);
     highScores = highScores.length > 10 ? highScores.slice(0,10) : highScores;
@@ -208,11 +208,12 @@ class Game {
     highScoreContainer.empty();
 
     if(highScores.length) {
+      scores = $('<ol></ol>');
       highScores.forEach(record => {
         scores.append($(`<li>${record.name} ${record.score}</li>`))
       })
     } else {
-      scores.append('<li>No high scores yet!</li>');
+      scores = $('<p class="center">none yet!</p>');
     }
 
     highScoreContainer.append(scores);
